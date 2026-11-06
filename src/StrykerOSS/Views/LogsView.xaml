@@ -9,8 +9,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Logs" Style="{StaticResource H1}"/>
-            <TextBlock Text="Live in-app log stream (real ILogger events). Full history is persisted to {DataDir}\logs.txt."
+            <TextBlock Text="Journaux" Style="{StaticResource H1}"/>
+            <TextBlock Text="Flux de journal en direct dans l'application (événements ILogger réels). L'historique complet est conservé dans {DataDir}\logs.txt."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -18,12 +18,12 @@
             <DockPanel>
                 <!-- toolbar -->
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock Text="LEVEL" Style="{StaticResource Section}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="NIVEAU" Style="{StaticResource Section}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox Style="{StaticResource ComboDark}" Width="120" VerticalAlignment="Center"
                               ItemsSource="{Binding Levels}" SelectedItem="{Binding SelectedLevel}"/>
-                    <Button Content="Export" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                    <Button Content="Exporter" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
                             Command="{Binding ExportCommand}"/>
-                    <Button Content="Clear view" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                    <Button Content="Effacer l'affichage" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                             Command="{Binding ClearViewCommand}"/>
                     <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="14,0,0,0"
                                VerticalAlignment="Center"/>

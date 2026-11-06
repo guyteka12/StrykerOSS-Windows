@@ -61,21 +61,21 @@ public sealed class LanService : ILanService
         var (gateway, cidr) = await DetectNetworkAsync().ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(cidr))
         {
-            log?.Report("No active Ethernet/Wi-Fi adapter with a default gateway detected.");
+            log?.Report("Aucune carte Ethernet/Wi-Fi active avec passerelle par défaut détectée.");
             return new List<LanDevice>();
         }
 
         var ips = ExpandCidr(cidr);
         if (ips.Count == 0)
         {
-            log?.Report($"Could not expand network {cidr}.");
+            log?.Report($"Impossible d'étendre le réseau {cidr}.");
             return new List<LanDevice>();
         }
 
         await _oui.InitializeAsync().ConfigureAwait(false);
 
         var total = ips.Count;
-        log?.Report($"Scanning {total} hosts on {cidr} (gateway {gateway}) - ICMP {PingTimeoutMs}ms timeout, {MaxConcurrency} parallel...");
+        log?.Report($"Analyse de {total} hôtes sur {cidr} (passerelle {gateway}) - délai ICMP {PingTimeoutMs} ms, {MaxConcurrency} en parallèle...");
 
         var found = new ConcurrentBag<LanDevice>();
         int done = 0, alive = 0;
@@ -111,7 +111,7 @@ public sealed class LanService : ILanService
             }
 
             await Task.WhenAll(batch).ConfigureAwait(false);
-            log?.Report($"scanned {done}/{total}, found {alive}");
+            log?.Report($"{done}/{total} analysés, {alive} actifs trouvés");
         }
 
         ct.ThrowIfCancellationRequested();

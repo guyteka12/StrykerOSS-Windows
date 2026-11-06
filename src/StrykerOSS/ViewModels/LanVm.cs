@@ -25,8 +25,8 @@ public partial class LanVm : ObservableObject
     [ObservableProperty] private string _gateway = "";
     [ObservableProperty] private string _cidr = "";
     [ObservableProperty] private string _progressText = "";
-    [ObservableProperty] private string _status = "Ready";
-    [ObservableProperty] private string _ouiInfo = "OUI database: loading...";
+    [ObservableProperty] private string _status = "Prêt";
+    [ObservableProperty] private string _ouiInfo = "Base OUI : chargement...";
 
     public LanVm(ILanService lan, IPortScanner ports, IOuiService oui, IDbService db, ILogger log)
     {
@@ -45,13 +45,13 @@ public partial class LanVm : ObservableObject
         try
         {
             await _oui.InitializeAsync();
-            Ui(() => OuiInfo = $"OUI database: {_oui.EntryCount:N0} vendor entries");
+            Ui(() => OuiInfo = $"Base OUI : {_oui.EntryCount:N0} fabricants référencés");
             await DetectCoreAsync();
         }
         catch (Exception ex)
         {
-            _log.Error("lan", "init failed", ex);
-            Ui(() => Status = "Init error: " + ex.Message);
+            _log.Error("lan", "échec de l'initialisation", ex);
+            Ui(() => Status = "Erreur d'initialisation : " + ex.Message);
         }
     }
 
@@ -72,15 +72,15 @@ public partial class LanVm : ObservableObject
                 Gateway = gw;
                 Cidr = cidr;
                 Status = cidr.Length == 0
-                    ? "No active Ethernet/Wi-Fi network with a gateway detected"
-                    : $"Network {cidr} via gateway {gw}";
+                    ? "Aucun réseau Ethernet/Wi-Fi actif avec passerelle détecté"
+                    : $"Réseau {cidr} via la passerelle {gw}";
             });
-            _log.Info("lan", $"detected gateway={gw} cidr={cidr}");
+            _log.Info("lan", $"détection : passerelle={gw} cidr={cidr}");
         }
         catch (Exception ex)
         {
-            _log.Error("lan", "network detection failed", ex);
-            Ui(() => Status = "Detect failed: " + ex.Message);
+            _log.Error("lan", "échec de la détection réseau", ex);
+            Ui(() => Status = "Échec de la détection : " + ex.Message);
         }
     }
 
@@ -89,7 +89,7 @@ public partial class LanVm : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Ui(() => { Devices.Clear(); ProgressText = ""; Status = "Discovering hosts..."; });
+        Ui(() => { Devices.Clear(); ProgressText = ""; Status = "Découverte des hôtes en cours..."; });
 
         var sw = Stopwatch.StartNew();
         var started = DateTime.Now;
@@ -103,22 +103,22 @@ public partial class LanVm : ObservableObject
             {
                 foreach (var d in devices) Devices.Add(new LanDeviceRow(this, d));
                 ProgressText = "";
-                Status = $"{devices.Count} devices discovered in {sw.Elapsed.TotalSeconds:0.0}s";
+                Status = $"{devices.Count} appareils découverts en {sw.Elapsed.TotalSeconds:0.0} s";
             });
 
             await _db.AddScanAsync(new ScanRecord(0, null, "lan-discover", Cidr, started,
-                (int)sw.Elapsed.TotalMilliseconds, $"{devices.Count} devices", null));
-            _log.Info("lan", $"discover done: {devices.Count} devices on {Cidr}");
+                (int)sw.Elapsed.TotalMilliseconds, $"{devices.Count} appareils", null));
+            _log.Info("lan", $"découverte terminée : {devices.Count} appareils sur {Cidr}");
         }
         catch (OperationCanceledException)
         {
-            Ui(() => { ProgressText = ""; Status = "Cancelled"; });
-            _log.Warn("lan", "discover cancelled");
+            Ui(() => { ProgressText = ""; Status = "Annulé"; });
+            _log.Warn("lan", "découverte annulée");
         }
         catch (Exception ex)
         {
-            _log.Error("lan", "discover failed", ex);
-            Ui(() => Status = "Error: " + ex.Message);
+            _log.Error("lan", "échec de la découverte", ex);
+            Ui(() => Status = "Erreur : " + ex.Message);
         }
         finally
         {
@@ -140,13 +140,13 @@ public partial class LanVm : ObservableObject
             row.SetPorts(open);
             var banners = results.Where(r => r.Open && r.Banner != null)
                                  .Select(r => $"{r.Port}: {r.Banner}").ToList();
-            _log.Info("lan", $"port scan {row.Ip}: {open.Count} open of {_ports.CommonPorts.Count}" +
+            _log.Info("lan", $"analyse de ports {row.Ip} : {open.Count} ouverts sur {_ports.CommonPorts.Count}" +
                             (banners.Count > 0 ? $" - {string.Join(" | ", banners)}" : ""));
         }
         catch (Exception ex)
         {
-            _log.Error("lan", $"port scan failed for {row.Ip}", ex);
-            row.PortsSummary = "scan failed";
+            _log.Error("lan", $"échec de l'analyse de ports pour {row.Ip}", ex);
+            row.PortsSummary = "échec de l'analyse";
         }
         finally
         {
@@ -164,7 +164,7 @@ public partial class LanVm : ObservableObject
             if (dev == null)
             {
                 row.Alive = false;
-                row.StatusNote = "offline";
+                row.StatusNote = "hors ligne";
             }
             else
             {
@@ -175,8 +175,8 @@ public partial class LanVm : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Error("lan", $"ping failed for {row.Ip}", ex);
-            row.StatusNote = "ping error";
+            _log.Error("lan", $"échec du ping pour {row.Ip}", ex);
+            row.StatusNote = "erreur de ping";
         }
         finally
         {
@@ -226,7 +226,7 @@ public partial class LanDeviceRow : ObservableObject
 
     public string HostText => string.IsNullOrWhiteSpace(Hostname) ? "" : Hostname!;
     public bool HasHost => HostText.Length > 0;
-    public string MacText => string.IsNullOrWhiteSpace(Mac) ? "MAC not resolved" : Mac!;
+    public string MacText => string.IsNullOrWhiteSpace(Mac) ? "MAC non résolue" : Mac!;
     public string VendorText => string.IsNullOrWhiteSpace(Vendor) ? "" : Vendor!;
     public bool HasVendor => VendorText.Length > 0;
     public string LatencyText => $"{LatencyMs} ms";
@@ -236,8 +236,8 @@ public partial class LanDeviceRow : ObservableObject
     internal void SetPorts(List<int> ports)
     {
         Device = Device with { OpenPorts = ports };
-        PortsSummary = $"{ports.Count} open (common ports)";
-        OpenPortsText = ports.Count == 0 ? "no open ports found" : string.Join(", ", ports);
+        PortsSummary = $"{ports.Count} ouvert(s) (ports courants)";
+        OpenPortsText = ports.Count == 0 ? "aucun port ouvert trouvé" : string.Join(", ", ports);
     }
 
     [RelayCommand]

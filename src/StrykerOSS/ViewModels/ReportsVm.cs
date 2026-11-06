@@ -16,9 +16,9 @@ public partial class ReportsVm : ObservableObject
     public ObservableCollection<string> Formats { get; } = new() { "PDF", "HTML", "Markdown" };
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private Project? _selectedProject;
-    [ObservableProperty] private string _title = "Penetration Test Report";
+    [ObservableProperty] private string _title = "Rapport de test d'intrusion";
     [ObservableProperty] private string _author = "";
     [ObservableProperty] private string _execSummary = "";
     [ObservableProperty] private string _selectedFormat = "PDF";
@@ -37,9 +37,9 @@ public partial class ReportsVm : ObservableObject
     partial void OnSelectedProjectChanged(Project? value)
     {
         if (value is { Id: > 0 } &&
-            (string.IsNullOrWhiteSpace(Title) || Title == "Penetration Test Report"))
+            (string.IsNullOrWhiteSpace(Title) || Title == "Rapport de test d'intrusion"))
         {
-            Title = $"Penetration Test Report - {value.Name}";
+            Title = $"Rapport de test d'intrusion - {value.Name}";
         }
     }
 
@@ -52,7 +52,7 @@ public partial class ReportsVm : ObservableObject
         {
             // sentinel first row: Id 0 = "no project link"
             Projects.Clear();
-            Projects.Add(new Project(0, "— no project —", null, "", "", DateTime.MinValue, DateTime.MinValue));
+            Projects.Add(new Project(0, "— aucun projet —", null, "", "", DateTime.MinValue, DateTime.MinValue));
             foreach (var p in projects) Projects.Add(p);
             SelectedProject = selId > 0 ? Projects.FirstOrDefault(x => x.Id == selId) : Projects[0];
 
@@ -69,12 +69,12 @@ public partial class ReportsVm : ObservableObject
         try
         {
             await LoadCoreAsync();
-            Status = $"{Reports.Count} report(s) recorded";
+            Status = $"{Reports.Count} rapport(s) enregistré(s)";
         }
         catch (Exception ex)
         {
-            _log.Error("reports", "reload failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("reports", "échec du rechargement", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -83,7 +83,7 @@ public partial class ReportsVm : ObservableObject
     private async Task GenerateAsync()
     {
         if (IsBusy) return;
-        if (string.IsNullOrWhiteSpace(Title)) { Status = "Report title is required."; return; }
+        if (string.IsNullOrWhiteSpace(Title)) { Status = "Le titre du rapport est requis."; return; }
         IsBusy = true;
         try
         {
@@ -95,18 +95,18 @@ public partial class ReportsVm : ObservableObject
                 string.IsNullOrWhiteSpace(Author) ? _settings.Value.DefaultAuthor : Author.Trim(),
                 string.IsNullOrWhiteSpace(ExecSummary) ? null : ExecSummary.Trim(),
                 SelectedFormat, outDir);
-            Status = "Generated: " + path;
-            _log.Info("reports", $"report generated: {path}");
+            Status = "Généré : " + path;
+            _log.Info("reports", $"rapport généré : {path}");
             await LoadCoreAsync();
         }
         catch (OperationCanceledException)
         {
-            Status = "Cancelled";
+            Status = "Annulé";
         }
         catch (Exception ex)
         {
-            _log.Error("reports", "generate failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("reports", "échec de la génération", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -125,8 +125,8 @@ public partial class ReportsVm : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Error("reports", $"open failed: {r.Path}", ex);
-            Status = "Open failed: " + ex.Message;
+            _log.Error("reports", $"échec de l'ouverture : {r.Path}", ex);
+            Status = "Échec de l'ouverture : " + ex.Message;
         }
     }
 }

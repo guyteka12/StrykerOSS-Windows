@@ -20,8 +20,8 @@ public partial class NucleiVm : ObservableObject
     private CancellationTokenSource? _cts;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
-    [ObservableProperty] private string _installStatus = "checking...";
+    [ObservableProperty] private string _status = "Prêt";
+    [ObservableProperty] private string _installStatus = "vérification...";
     [ObservableProperty] private string _targetsText = "";
     [ObservableProperty] private string _tagsText = "";
     [ObservableProperty] private bool _sevInfo;
@@ -29,7 +29,7 @@ public partial class NucleiVm : ObservableObject
     [ObservableProperty] private bool _sevMedium = true;
     [ObservableProperty] private bool _sevHigh = true;
     [ObservableProperty] private bool _sevCritical = true;
-    [ObservableProperty] private string _summary = "no scan yet";
+    [ObservableProperty] private string _summary = "aucun scan pour le moment";
     [ObservableProperty] private string? _rawPath;
 
     public ObservableCollection<string> LogLines { get; } = new();
@@ -48,12 +48,12 @@ public partial class NucleiVm : ObservableObject
         try
         {
             var path = await Task.Run(_nuclei.FindNuclei);
-            InstallStatus = path ?? "not installed";
+            InstallStatus = path ?? "non installé";
         }
         catch (Exception ex)
         {
-            InstallStatus = "not installed";
-            _log.Warn("nuclei", "locate failed: " + ex.Message);
+            InstallStatus = "non installé";
+            _log.Warn("nuclei", "échec de localisation : " + ex.Message);
         }
     }
 
@@ -71,17 +71,17 @@ public partial class NucleiVm : ObservableObject
         if (IsBusy) return;
         IsBusy = true;
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        Status = "Installing nuclei...";
+        Status = "Installation de nuclei...";
         try
         {
             var prog = new Progress<string>(AddLog);
             var path = await Task.Run(async () => await _nuclei.EnsureInstalledAsync(prog, _cts.Token), _cts.Token);
             InstallStatus = path;
-            Status = "nuclei ready: " + path;
-            _log.Info("nuclei", "installed/updated: " + path);
+            Status = "nuclei prêt : " + path;
+            _log.Info("nuclei", "installé/mis à jour : " + path);
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("nuclei", "install failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("nuclei", "échec de l'installation", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; _cts?.Dispose(); _cts = null; }
     }
 
@@ -94,7 +94,7 @@ public partial class NucleiVm : ObservableObject
         var targets = TargetsText
             .Split(new[] { '\r', '\n', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        if (targets.Count == 0) { Status = "enter at least one target (one host or URL per line)"; return; }
+        if (targets.Count == 0) { Status = "saisissez au moins une cible (un hôte ou une URL par ligne)"; return; }
 
         var sev = new List<string>();
         if (SevCritical) sev.Add("critical");
@@ -106,13 +106,13 @@ public partial class NucleiVm : ObservableObject
 
         IsBusy = true;
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        Status = "nuclei running...";
-        Summary = "scanning...";
+        Status = "scan nuclei en cours...";
+        Summary = "analyse en cours...";
         App.Current.Dispatcher.Invoke(() => { LogLines.Clear(); Findings.Clear(); });
         try
         {
             var prog = new Progress<string>(AddLog);
-            AddLog("note: first run downloads the nuclei template database (one time)");
+            AddLog("note : le premier lancement télécharge la base de modèles nuclei (une seule fois)");
             var run = await Task.Run(async () => await _nuclei.ScanAsync(targets, sev, tags, prog, _cts.Token), _cts.Token);
 
             App.Current.Dispatcher.Invoke(() =>
@@ -126,22 +126,22 @@ public partial class NucleiVm : ObservableObject
             int m = run.Findings.Count(f => f.Severity == "MEDIUM");
             int l = run.Findings.Count(f => f.Severity == "LOW");
             int i = run.Findings.Count(f => f.Severity == "INFO");
-            Summary = $"{run.Findings.Count} findings - critical {c}, high {h}, medium {m}, low {l}, info {i}";
-            Status = $"done in {run.Duration.TotalSeconds:0.0}s";
+            Summary = $"{run.Findings.Count} constats - critiques {c}, élevés {h}, moyens {m}, faibles {l}, info {i}";
+            Status = $"terminé en {run.Duration.TotalSeconds:0.0} s";
 
             try
             {
                 await _db.AddScanAsync(new ScanRecord(0, null, "nuclei", run.Targets, run.Started,
                     (int)run.Duration.TotalMilliseconds, Summary, run.RawPath));
-                _log.Info("nuclei", "scan recorded to project database");
+                _log.Info("nuclei", "scan enregistré dans la base du projet");
             }
             catch (Exception dbEx)
             {
-                _log.Warn("nuclei", "could not record scan: " + dbEx.Message);
+                _log.Warn("nuclei", "impossible d'enregistrer le scan : " + dbEx.Message);
             }
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; Summary = "cancelled"; }
-        catch (Exception ex) { _log.Error("nuclei", "scan failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; Summary = "annulé"; }
+        catch (Exception ex) { _log.Error("nuclei", "échec du scan", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; _cts?.Dispose(); _cts = null; }
     }
 
@@ -150,7 +150,7 @@ public partial class NucleiVm : ObservableObject
     {
         if (_cts is null) return;
         _cts.Cancel();
-        Status = "cancelling...";
+        Status = "annulation...";
     }
 
     // ---------------- export ----------------
@@ -158,11 +158,11 @@ public partial class NucleiVm : ObservableObject
     [RelayCommand]
     private void ExportCsv()
     {
-        if (Findings.Count == 0) { Status = "nothing to export - run a scan first"; return; }
+        if (Findings.Count == 0) { Status = "rien à exporter - lancez d'abord un scan"; return; }
         var dlg = new SaveFileDialog
         {
-            Title = "Export nuclei findings (CSV)",
-            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+            Title = "Exporter les constats nuclei (CSV)",
+            Filter = "Fichiers CSV (*.csv)|*.csv|Tous les fichiers (*.*)|*.*",
             FileName = $"nuclei_findings_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
         };
         if (dlg.ShowDialog() != true) return;
@@ -178,10 +178,10 @@ public partial class NucleiVm : ObservableObject
                     Csv(f.FoundAt.ToString("yyyy-MM-dd HH:mm:ss"))));
             }
             File.WriteAllText(dlg.FileName, sb.ToString(), new UTF8Encoding(false));
-            Status = "exported: " + dlg.FileName;
-            _log.Info("nuclei", $"exported {Findings.Count} findings -> {dlg.FileName}");
+            Status = "exporté : " + dlg.FileName;
+            _log.Info("nuclei", $"{Findings.Count} constats exportés -> {dlg.FileName}");
         }
-        catch (Exception ex) { _log.Error("nuclei", "csv export failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("nuclei", "échec de l'export CSV", ex); Status = "Erreur : " + ex.Message; }
     }
 
     private static string Csv(string s)
@@ -192,11 +192,11 @@ public partial class NucleiVm : ObservableObject
     [RelayCommand]
     private void OpenRaw()
     {
-        if (RawPath is null || !File.Exists(RawPath)) { Status = "no raw JSONL yet - run a scan first"; return; }
+        if (RawPath is null || !File.Exists(RawPath)) { Status = "pas encore de JSONL brut - lancez d'abord un scan"; return; }
         try
         {
             Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{RawPath}\"") { UseShellExecute = true });
         }
-        catch (Exception ex) { _log.Error("nuclei", "open raw failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("nuclei", "échec de l'ouverture du brut", ex); Status = "Erreur : " + ex.Message; }
     }
 }

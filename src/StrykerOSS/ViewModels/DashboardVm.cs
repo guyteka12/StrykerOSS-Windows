@@ -14,7 +14,7 @@ public partial class DashboardVm : ObservableObject
     public ObservableCollection<ScanRecord> RecentScans { get; } = new();
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Loading...";
+    [ObservableProperty] private string _status = "Chargement...";
     [ObservableProperty] private string _adminLine = "";
     [ObservableProperty] private bool _isElevated;
 
@@ -71,13 +71,13 @@ public partial class DashboardVm : ObservableObject
                 RecentScans.Clear();
                 foreach (var s in scans) RecentScans.Add(s);
             });
-            Status = $"Ready - {stats.Scans} scan(s), {stats.Findings} finding(s), {stats.Reports} report(s)";
-            _log.Info("dashboard", "stats + recent scans loaded");
+            Status = $"Prêt — {stats.Scans} analyse(s), {stats.Findings} constat(s), {stats.Reports} rapport(s)";
+            _log.Info("dashboard", "statistiques + analyses récentes chargées");
         }
         catch (Exception ex)
         {
-            _log.Error("dashboard", "load failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("dashboard", "échec du chargement", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }

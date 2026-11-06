@@ -10,7 +10,7 @@
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
             <TextBlock Text="Arsenal" Style="{StaticResource H1}"/>
-            <TextBlock Text="Custom scanner/exploit command templates - real execution on this machine. Only run against systems you may test."
+            <TextBlock Text="Modèles de commandes personnalisés de scan/exploit - exécution réelle sur cette machine. Ciblez uniquement des systèmes que vous êtes autorisé à tester."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -24,12 +24,12 @@
             <Border Grid.Column="0" Style="{StaticResource Card}">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
-                        <Button Content="New" Style="{StaticResource BtnGhost}" Command="{Binding NewTemplateCommand}"/>
-                        <Button Content="Duplicate" Style="{StaticResource BtnGhost}" Command="{Binding DuplicateTemplateCommand}" Margin="8,0,0,0"/>
-                        <Button Content="Seed" Style="{StaticResource BtnGhost}" Command="{Binding SeedCommand}" Margin="8,0,0,0"
-                                ToolTip="Adds the 6 built-in templates when the list is empty"/>
+                        <Button Content="Nouveau" Style="{StaticResource BtnGhost}" Command="{Binding NewTemplateCommand}"/>
+                        <Button Content="Dupliquer" Style="{StaticResource BtnGhost}" Command="{Binding DuplicateTemplateCommand}" Margin="8,0,0,0"/>
+                        <Button Content="Initialiser" Style="{StaticResource BtnGhost}" Command="{Binding SeedCommand}" Margin="8,0,0,0"
+                                ToolTip="Ajoute les 6 modèles intégrés lorsque la liste est vide"/>
                     </StackPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="TEMPLATES" Style="{StaticResource Section}"/>
+                    <TextBlock DockPanel.Dock="Top" Text="MODÈLES" Style="{StaticResource Section}"/>
                     <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding Templates}"
                              SelectedItem="{Binding SelectedTemplate}" ItemContainerStyle="{StaticResource NavListBoxItem}"
                              VirtualizingPanel.ScrollUnit="Pixel" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -61,22 +61,22 @@
                 <!-- edit panel -->
                 <Border Grid.Row="0" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="EDIT TEMPLATE" Style="{StaticResource Section}"/>
+                        <TextBlock Text="MODIFIER LE MODÈLE" Style="{StaticResource Section}"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Name" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="Nom" Style="{StaticResource Caption}"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Category" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="Catégorie" Style="{StaticResource Caption}"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding EditCategory, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </Grid>
-                        <TextBlock Text="Command - tokens: {IP} {PORT} {MAC} {GW} {MASK} {TARGET_URL}"
+                        <TextBlock Text="Commande - jetons : {IP} {PORT} {MAC} {GW} {MASK} {TARGET_URL}"
                                    Style="{StaticResource Caption}" Margin="0,8,0,2"/>
                         <TextBox Style="{StaticResource InputBox}" AcceptsReturn="True" TextWrapping="Wrap" Height="90"
                                  VerticalScrollBarVisibility="Auto" FontFamily="Consolas"
@@ -84,8 +84,8 @@
                         <TextBlock Text="Description" Style="{StaticResource Caption}" Margin="0,8,0,2"/>
                         <TextBox Style="{StaticResource InputBox}" Text="{Binding EditDescription, UpdateSourceTrigger=PropertyChanged}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                            <Button Content="Save" Style="{StaticResource BtnPrimary}" Command="{Binding SaveTemplateCommand}"/>
-                            <Button Content="Delete" Style="{StaticResource BtnDanger}" Command="{Binding DeleteTemplateCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Enregistrer" Style="{StaticResource BtnPrimary}" Command="{Binding SaveTemplateCommand}"/>
+                            <Button Content="Supprimer" Style="{StaticResource BtnDanger}" Command="{Binding DeleteTemplateCommand}" Margin="8,0,0,0"/>
                             <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
@@ -95,7 +95,7 @@
                 <Border Grid.Row="1" Style="{StaticResource Card}">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top">
-                            <TextBlock Text="EXECUTE" Style="{StaticResource Section}"/>
+                            <TextBlock Text="EXÉCUTER" Style="{StaticResource Section}"/>
                             <UniformGrid Columns="5">
                                 <StackPanel Margin="0,0,6,0">
                                     <TextBlock Text="IP" Style="{StaticResource Caption}"/>
@@ -118,15 +118,15 @@
                                     <TextBox Style="{StaticResource InputBox}" Text="{Binding ExeMask, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
                             </UniformGrid>
-                            <TextBlock Text="Rendered command" Style="{StaticResource Caption}" Margin="0,10,0,2"/>
+                            <TextBlock Text="Commande générée" Style="{StaticResource Caption}" Margin="0,10,0,2"/>
                             <Border Background="{StaticResource Card2Brush}" CornerRadius="10" Padding="10,8">
                                 <TextBlock Text="{Binding Preview}" Style="{StaticResource Body}" FontFamily="Consolas"/>
                             </Border>
                             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                                <Button Content="Execute" Style="{StaticResource BtnPrimary}" Command="{Binding ExecuteCommand}"/>
-                                <Button Content="Cancel" Style="{StaticResource BtnDanger}" Command="{Binding CancelExecuteCommand}"
+                                <Button Content="Exécuter" Style="{StaticResource BtnPrimary}" Command="{Binding ExecuteCommand}"/>
+                                <Button Content="Annuler" Style="{StaticResource BtnDanger}" Command="{Binding CancelExecuteCommand}"
                                         Margin="8,0,0,0" IsEnabled="{Binding IsBusy}"/>
-                                <TextBlock Text="Educational reminder: only execute against systems you are authorized to test."
+                                <TextBlock Text="Rappel pédagogique : n'exécutez que sur des systèmes que vous êtes autorisé à tester."
                                            Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                             </StackPanel>
                         </StackPanel>

@@ -26,8 +26,8 @@ public sealed class HidService : IHidService
 
     public async Task<HidScriptInfo> ParseAsync(string duckPath)
     {
-        if (string.IsNullOrWhiteSpace(duckPath)) throw new ArgumentException("Script path required", nameof(duckPath));
-        if (!File.Exists(duckPath)) throw new FileNotFoundException("DuckyScript not found", duckPath);
+        if (string.IsNullOrWhiteSpace(duckPath)) throw new ArgumentException("Chemin du script requis", nameof(duckPath));
+        if (!File.Exists(duckPath)) throw new FileNotFoundException("DuckyScript introuvable", duckPath);
 
         const int defDelay = 10;                                       // DEFAULTDELAY applied between commands
         var lines = await ReadLinesAsync(duckPath).ConfigureAwait(false);
@@ -66,11 +66,11 @@ public sealed class HidService : IHidService
 
     public Task RunAsync(string duckPath, IProgress<string>? log = null, CancellationToken ct = default)
     {
-        if (!File.Exists(duckPath)) throw new FileNotFoundException("DuckyScript not found", duckPath);
+        if (!File.Exists(duckPath)) throw new FileNotFoundException("DuckyScript introuvable", duckPath);
         Task t;
         lock (_runLock)
         {
-            if (_running) throw new InvalidOperationException("A DuckyScript is already running - stop it first.");
+            if (_running) throw new InvalidOperationException("Un DuckyScript est déjà en cours d'exécution - arrêtez-le d'abord.");
             var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
             _cts = linked;
             _running = true;
@@ -96,7 +96,7 @@ public sealed class HidService : IHidService
         var ct = linked.Token;
         try
         {
-            log?.Report($"> running {Path.GetFileName(duckPath)}");
+            log?.Report($"> exécution de {Path.GetFileName(duckPath)}");
             _log.Info("hid", $"DuckyScript start: {duckPath}");
             var lines = await ReadLinesAsync(duckPath).ConfigureAwait(false);
 
@@ -131,12 +131,12 @@ public sealed class HidService : IHidService
                         await Delay(ct, ms).ConfigureAwait(false);
                         last = ("DELAY", arg);
                     }
-                    else log?.Report($"> bad DELAY value '{arg}'");
+                    else log?.Report($"> valeur DELAY invalide '{arg}'");
                     continue;
                 }
                 if (cmd == "REPEAT")
                 {
-                    if (last == null) { log?.Report("> REPEAT with no previous command"); continue; }
+                    if (last == null) { log?.Report("> REPEAT sans commande précédente"); continue; }
                     if (!int.TryParse(arg, out int n) || n < 1) n = 1;
                     if (n > 1000) n = 1000;                            // sanity cap
                     for (int r = 0; r < n; r++)
@@ -161,7 +161,7 @@ public sealed class HidService : IHidService
                 await Delay(ct, defaultDelay).ConfigureAwait(false);
             }
 
-            log?.Report("> script finished");
+            log?.Report("> script terminé");
             _log.Info("hid", "DuckyScript finished");
         }
         finally
@@ -203,7 +203,7 @@ public sealed class HidService : IHidService
         foreach (var n in names)
         {
             var vk = Vk(n);
-            if (vk == null) { log?.Report($"> unknown key '{n}'"); continue; }
+            if (vk == null) { log?.Report($"> touche inconnue '{n}'"); continue; }
             if (IsModifier(n)) { if (!mods.Contains(vk.Value)) mods.Add(vk.Value); }
             else keys.Add(vk.Value);
         }
@@ -228,7 +228,7 @@ public sealed class HidService : IHidService
         {
             ct.ThrowIfCancellationRequested();
             short res = VkKeyScanW(ch);                                // active keyboard layout -> VK + shift state
-            if (res == -1) { log?.Report($"> char '{ch}' not on current keyboard layout - skipped"); continue; }
+            if (res == -1) { log?.Report($"> caractère '{ch}' absent de la disposition clavier actuelle - ignoré"); continue; }
             ushort vk = (ushort)(res & 0xFF);
             byte shift = (byte)((res >> 8) & 0xFF);                    // 1=shift 2=ctrl 4=alt
             var mods = new List<ushort>();

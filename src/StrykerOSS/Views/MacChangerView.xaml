@@ -10,7 +10,7 @@
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
             <TextBlock Text="MAC Changer" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real MAC address override via the adapter driver registry key + netsh restart - verified against the live OS state." Style="{StaticResource Caption}"/>
+            <TextBlock Text="Surcharge réelle de l'adresse MAC via la clé de registre du pilote de l'adaptateur + redémarrage netsh - vérifiée sur l'état réel du système." Style="{StaticResource Caption}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -30,7 +30,7 @@
                 <!-- adapter + apply card -->
                 <Border Grid.Row="0" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="ADAPTER" Style="{StaticResource Section}"/>
+                        <TextBlock Text="ADAPTATEUR" Style="{StaticResource Section}"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -40,11 +40,11 @@
                                       ItemsSource="{Binding Adapters}"
                                       SelectedItem="{Binding SelectedAdapter, Mode=TwoWay}"
                                       DisplayMemberPath="Description"/>
-                            <Button Grid.Column="1" Content="Refresh" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            <Button Grid.Column="1" Content="Actualiser" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                                     Command="{Binding LoadCommand}"/>
                         </Grid>
 
-                        <TextBlock Text="NEW MAC" Style="{StaticResource Section}" Margin="0,12,0,4"/>
+                        <TextBlock Text="NOUVELLE MAC" Style="{StaticResource Section}" Margin="0,12,0,4"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -52,17 +52,17 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0" Style="{StaticResource InputBox}" FontFamily="Consolas"
                                      Text="{Binding MacText, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Grid.Column="1" Content="Random" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            <Button Grid.Column="1" Content="Aléatoire" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                                     Command="{Binding RandomMacCommand}"/>
                         </Grid>
 
-                        <TextBlock Text='Confirm - type "APPLY" below to enable the Apply button.' Style="{StaticResource Caption}" Margin="0,10,0,4"/>
+                        <TextBlock Text='Confirmation - saisissez "APPLY" ci-dessous pour activer le bouton Appliquer.' Style="{StaticResource Caption}" Margin="0,10,0,4"/>
                         <TextBox Style="{StaticResource InputBox}" FontFamily="Consolas"
                                  Text="{Binding ApplyConfirm, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                            <Button Content="Apply MAC" Style="{StaticResource BtnDanger}" Command="{Binding ApplyCommand}"/>
-                            <Button Content="Restore permanent" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            <Button Content="Appliquer la MAC" Style="{StaticResource BtnDanger}" Command="{Binding ApplyCommand}"/>
+                            <Button Content="Restaurer la MAC permanente" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                                     Command="{Binding RestoreCommand}"/>
                             <ProgressBar Style="{StaticResource ProgressAccent}" Width="120" IsIndeterminate="{Binding IsBusy}"
                                          VerticalAlignment="Center" Margin="12,0,0,0"/>
@@ -74,7 +74,7 @@
                 <!-- profiles card -->
                 <Border Grid.Row="1" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="MAC PROFILES" Style="{StaticResource Section}"/>
+                        <TextBlock Text="PROFILS MAC" Style="{StaticResource Section}"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -82,7 +82,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0" Style="{StaticResource InputBox}"
                                      Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Grid.Column="1" Content="Save current" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0"
+                            <Button Grid.Column="1" Content="Enregistrer l'actuelle" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0"
                                     Command="{Binding SaveProfileCommand}"/>
                         </Grid>
                         <ListBox ItemsSource="{Binding Profiles}"
@@ -99,15 +99,15 @@
                                         <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" FontWeight="SemiBold" FontSize="13"/>
                                         <TextBlock Text="{Binding Mac}" FontFamily="Consolas" FontSize="12" Margin="10,0,0,0"
                                                    VerticalAlignment="Center" Foreground="{StaticResource DimBrush}"/>
-                                        <TextBlock Text="{Binding Created, StringFormat='saved {0:yyyy-MM-dd HH:mm}'}"
+                                        <TextBlock Text="{Binding Created, StringFormat='enregistré le {0:yyyy-MM-dd HH:mm}'}"
                                                    Style="{StaticResource Caption}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                            <Button Content="Load selected" Style="{StaticResource BtnGhost}" Command="{Binding ApplyProfileCommand}"/>
-                            <Button Content="Delete selected" Style="{StaticResource BtnDanger}" Margin="8,0,0,0"
+                            <Button Content="Charger la sélection" Style="{StaticResource BtnGhost}" Command="{Binding ApplyProfileCommand}"/>
+                            <Button Content="Supprimer la sélection" Style="{StaticResource BtnDanger}" Margin="8,0,0,0"
                                     Command="{Binding DeleteProfileCommand}"/>
                         </StackPanel>
                     </StackPanel>
@@ -116,7 +116,7 @@
                 <!-- log card -->
                 <Border Grid.Row="2" Style="{StaticResource Card}">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="OPERATION LOG" Style="{StaticResource Section}"/>
+                        <TextBlock DockPanel.Dock="Top" Text="JOURNAL DES OPÉRATIONS" Style="{StaticResource Section}"/>
                         <ListBox ItemsSource="{Binding LogLines}"
                                  Background="Transparent" BorderThickness="0"
                                  FontFamily="Consolas" FontSize="12"
@@ -132,9 +132,9 @@
                     <!-- info card -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="ADAPTER INFO" Style="{StaticResource Section}"/>
+                            <TextBlock Text="INFO ADAPTATEUR" Style="{StaticResource Section}"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <TextBlock Text="Current MAC" Style="{StaticResource Caption}" Width="120" VerticalAlignment="Center"/>
+                                <TextBlock Text="MAC actuelle" Style="{StaticResource Caption}" Width="120" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding CurrentMac}" Style="{StaticResource Body}" FontFamily="Consolas" FontWeight="SemiBold"/>
                                 <Border Margin="8,0,0,0">
                                     <Border.Style>
@@ -146,15 +146,15 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="OVERRIDE ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                    <TextBlock Text="SURCHARGE ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                 </Border>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <TextBlock Text="Configured MAC" Style="{StaticResource Caption}" Width="120" VerticalAlignment="Center"/>
+                                <TextBlock Text="MAC configurée" Style="{StaticResource Caption}" Width="120" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding ConfiguredMac}" Style="{StaticResource Body}" FontFamily="Consolas"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Medium" Style="{StaticResource Caption}" Width="120" VerticalAlignment="Center"/>
+                                <TextBlock Text="Support" Style="{StaticResource Caption}" Width="120" VerticalAlignment="Center"/>
                                 <Border>
                                     <Border.Style>
                                         <Style TargetType="Border" BasedOn="{StaticResource BadgeInfo}">
@@ -165,7 +165,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="WI-FI ADAPTER" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                    <TextBlock Text="ADAPTATEUR WI-FI" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                 </Border>
                                 <Border Margin="8,0,0,0">
                                     <Border.Style>
@@ -177,7 +177,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="ETHERNET / OTHER" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                    <TextBlock Text="ETHERNET / AUTRE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                 </Border>
                             </StackPanel>
                         </StackPanel>
@@ -186,18 +186,18 @@
                     <!-- warning card -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="WARNING" Style="{StaticResource Section}"/>
+                            <TextBlock Text="AVERTISSEMENT" Style="{StaticResource Section}"/>
                             <TextBlock Style="{StaticResource Caption}"
-                                       Text="Changing the MAC restarts the adapter — network drops for a few seconds. Requires Administrator (already elevated)."/>
+                                       Text="Changer la MAC redémarre l'adaptateur — le réseau est coupé quelques secondes. Nécessite les droits administrateur (déjà élevé)."/>
                         </StackPanel>
                     </Border>
 
                     <!-- educational reminder -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="EDUCATIONAL USE ONLY" Style="{StaticResource Section}"/>
+                            <TextBlock Text="USAGE ÉDUCATIF UNIQUEMENT" Style="{StaticResource Section}"/>
                             <TextBlock Style="{StaticResource Caption}"
-                                       Text="MAC spoofing can violate network policies or local law. Use only on networks you own or are explicitly authorized to test."/>
+                                       Text="L'usurpation d'adresse MAC peut violer des politiques réseau ou la loi locale. À utiliser uniquement sur des réseaux que vous possédez ou que vous êtes explicitement autorisé à tester."/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

@@ -16,7 +16,7 @@ public partial class MainWindowVm : ObservableObject
 
     [ObservableProperty] private string _selectedKey = "dashboard";
     [ObservableProperty] private UserControl? _currentView;
-    [ObservableProperty] private string _statusText = "Ready";
+    [ObservableProperty] private string _statusText = "Prêt";
 
     public MainWindowVm(INavigation nav, IAdmin admin, Func<string, UserControl> pageFactory)
     {
@@ -36,32 +36,32 @@ public partial class MainWindowVm : ObservableObject
         };
 
         if (!_admin.IsElevated)
-            StatusText = "WARNING: not elevated - some modules need Administrator rights";
+            StatusText = "ATTENTION : sans élévation — certains modules nécessitent les droits administrateur";
     }
 
     private static List<NavItem> BuildNav() => new()
     {
-        new("dashboard",   "Dashboard",         "\uE80F"),
-        new("wifi",        "Wi-Fi Networks",    "\uE701"),
-        new("lan",         "Local Network",     "\uE81C"),
-        new("nmap",        "Nmap Scanner",      "\uE721"),
-        new("nuclei",      "Web Scanner",       "\uE774"),
-        new("exploitdb",   "Exploit Database",  "\uE8B7"),
-        new("arsenal",     "Arsenal",           "\uE70F"),
-        new("handshakes",  "Handshakes",        "\uE72E"),
-        new("whisper",     "WhisperPair (BLE)", "\uE702"),
-        new("macchanger",  "MAC Changer",       "\uE8C8"),
-        new("hid",         "HID Attacks",       "\uE765"),
-        new("usb",         "USB Arsenal",       "\uE88E"),
-        new("metasploit",  "Metasploit",        "\uE945"),
-        new("sessions",    "Sessions",          "\uE9D9"),
-        new("console",     "Console",           "\uE756"),
-        new("geomac",      "GeoMac",            "\uE739"),
-        new("projects",    "Projects",          "\uE838"),
-        new("reports",     "Reports",           "\uE8A5"),
-        new("tools",       "Tools Manager",     "\uE90F"),
-        new("logs",        "Logs",              "\uE7C3"),
-        new("settings",    "Settings",          "\uE713"),
+        new("dashboard",   "Tableau de bord",        "\uE80F"),
+        new("wifi",        "Réseaux Wi-Fi",          "\uE701"),
+        new("lan",         "Réseau local",           "\uE81C"),
+        new("nmap",        "Scanner Nmap",           "\uE721"),
+        new("nuclei",      "Scanner web",            "\uE774"),
+        new("exploitdb",   "Base d'exploits",        "\uE8B7"),
+        new("arsenal",     "Arsenal",                "\uE70F"),
+        new("handshakes",  "Handshakes",             "\uE72E"),
+        new("whisper",     "WhisperPair (BLE)",      "\uE702"),
+        new("macchanger",  "Changeur d'adresse MAC", "\uE8C8"),
+        new("hid",         "Attaques HID",           "\uE765"),
+        new("usb",         "Arsenal USB",            "\uE88E"),
+        new("metasploit",  "Metasploit",             "\uE945"),
+        new("sessions",    "Sessions",               "\uE9D9"),
+        new("console",     "Console",                "\uE756"),
+        new("geomac",      "GeoMac",                 "\uE739"),
+        new("projects",    "Projets",                "\uE838"),
+        new("reports",     "Rapports",               "\uE8A5"),
+        new("tools",       "Gestionnaire d'outils",  "\uE90F"),
+        new("logs",        "Journaux",               "\uE7C3"),
+        new("settings",    "Paramètres",             "\uE713"),
     };
 
     private static string Label(string key)

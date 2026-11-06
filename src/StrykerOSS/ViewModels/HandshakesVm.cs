@@ -19,8 +19,8 @@ public sealed class HandshakeRow
     public DateTime Analyzed { get; init; }
     public HandshakeInfo Info { get; init; } = new(0, "", null, null, 0, false, new List<string>(), DateTime.Now);
 
-    public string MetaLine => $"ssid: {Ssid}   bssid: {Bssid}   analyzed: {Analyzed:yyyy-MM-dd HH:mm}";
-    public string ClientsLine => "clients: " + Clients;
+    public string MetaLine => $"ssid: {Ssid}   bssid: {Bssid}   analysé le : {Analyzed:yyyy-MM-dd HH:mm}";
+    public string ClientsLine => "clients : " + Clients;
     public string FramesText => $"{EapolFrames} EAPOL";
     public Visibility CompleteVis => HasHandshake ? Visibility.Visible : Visibility.Collapsed;
     public Visibility IncompleteVis => HasHandshake ? Visibility.Collapsed : Visibility.Visible;
@@ -34,7 +34,7 @@ public partial class HandshakesVm : ObservableObject
     private readonly List<HandshakeInfo> _session = new();   // analyzed in this session (merged with DB on refresh)
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _folderPath = "";
 
     public ObservableCollection<HandshakeRow> Items { get; } = new();
@@ -54,8 +54,8 @@ public partial class HandshakesVm : ObservableObject
         if (IsBusy) return;
         IsBusy = true;
         try { await RefreshAsync(); }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("handshakes", "load failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("handshakes", "Échec du chargement", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -65,25 +65,25 @@ public partial class HandshakesVm : ObservableObject
         if (IsBusy) return;
         var dlg = new OpenFileDialog
         {
-            Title = "Open packet capture",
-            Filter = "Packet captures (*.pcap;*.cap;*.pcapng)|*.pcap;*.cap;*.pcapng|All files (*.*)|*.*",
+            Title = "Ouvrir une capture de paquets",
+            Filter = "Captures de paquets (*.pcap;*.cap;*.pcapng)|*.pcap;*.cap;*.pcapng|Tous les fichiers (*.*)|*.*",
             CheckFileExists = true
         };
         if (dlg.ShowDialog() != true) return;
         IsBusy = true;
         try
         {
-            Status = $"Analyzing {Path.GetFileName(dlg.FileName)}...";
+            Status = $"Analyse de {Path.GetFileName(dlg.FileName)}...";
             var info = await _hs.AnalyzeAsync(dlg.FileName);
             _session.Add(info);
-            Log($"analyzed {info.FilePath}: eapol={info.EapolFrames} handshake={(info.HasHandshake ? "COMPLETE" : "INCOMPLETE")}");
+            Log($"analysé {info.FilePath} : eapol={info.EapolFrames} handshake={(info.HasHandshake ? "COMPLET" : "INCOMPLET")}");
             await RefreshAsync();
             Status = info.HasHandshake
-                ? $"Handshake COMPLETE for {(info.Ssid ?? info.Bssid)} ({info.EapolFrames} EAPOL frames)"
-                : $"No complete handshake in {Path.GetFileName(dlg.FileName)} ({info.EapolFrames} EAPOL frames)";
+                ? $"Handshake COMPLET pour {(info.Ssid ?? info.Bssid)} ({info.EapolFrames} trames EAPOL)"
+                : $"Aucun handshake complet dans {Path.GetFileName(dlg.FileName)} ({info.EapolFrames} trames EAPOL)";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("handshakes", "analyze failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("handshakes", "Échec de l'analyse", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -93,31 +93,31 @@ public partial class HandshakesVm : ObservableObject
         if (IsBusy) return;
         if (string.IsNullOrWhiteSpace(FolderPath) || !Directory.Exists(FolderPath))
         {
-            Status = "Enter a valid folder path first.";
+            Status = "Saisissez d'abord un chemin de dossier valide.";
             return;
         }
         IsBusy = true;
         try
         {
-            Status = "Analyzing folder...";
+            Status = "Analyse du dossier...";
             var prog = new Progress<string>(Log);
             var found = await _hs.AnalyzeDirectoryAsync(FolderPath, prog);
             _session.AddRange(found);
             await RefreshAsync();
-            Status = $"Analyzed {found.Count} file(s) - {found.Count(h => h.HasHandshake)} complete handshake(s)";
+            Status = $"Analysé {found.Count} fichier(s) - {found.Count(h => h.HasHandshake)} handshake(s) complet(s)";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("handshakes", "folder analyze failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("handshakes", "Échec de l'analyse du dossier", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
     [RelayCommand]
     private async Task ExportCsvAsync()
     {
-        if (Items.Count == 0) { Status = "Nothing to export - analyze a capture first."; return; }
+        if (Items.Count == 0) { Status = "Rien à exporter - analysez d'abord une capture."; return; }
         var dlg = new SaveFileDialog
         {
-            Title = "Export handshakes CSV",
+            Title = "Exporter les handshakes en CSV",
             Filter = "CSV (*.csv)|*.csv",
             FileName = "handshakes.csv"
         };
@@ -126,10 +126,10 @@ public partial class HandshakesVm : ObservableObject
         {
             var rows = Items.Select(r => r.Info).ToList();
             var path = await _hs.ExportCsvAsync(rows, dlg.FileName);
-            Log($"exported csv -> {path}");
-            Status = "CSV exported: " + path;
+            Log($"csv exporté -> {path}");
+            Status = "CSV exporté : " + path;
         }
-        catch (Exception ex) { _log.Error("handshakes", "csv export failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("handshakes", "Échec de l'export CSV", ex); Status = "Erreur : " + ex.Message; }
     }
 
     [RelayCommand]
@@ -139,21 +139,21 @@ public partial class HandshakesVm : ObservableObject
         var nameBase = row.Ssid == "-" ? row.Bssid : row.Ssid;
         var dlg = new SaveFileDialog
         {
-            Title = "Export hashcat 22000",
-            Filter = "Hashcat 22000 (*.txt)|*.txt|All files (*.*)|*.*",
+            Title = "Exporter vers Hashcat 22000",
+            Filter = "Hashcat 22000 (*.txt)|*.txt|Tous les fichiers (*.*)|*.*",
             FileName = $"{nameBase}.22000.txt"
         };
         if (dlg.ShowDialog() != true) return;
         try
         {
             var outDir = Path.GetDirectoryName(dlg.FileName);
-            if (string.IsNullOrEmpty(outDir)) { Status = "Invalid output folder."; return; }
+            if (string.IsNullOrEmpty(outDir)) { Status = "Dossier de sortie invalide."; return; }
             var path = await _hs.ExportHashcat22000Async(row.Info, outDir);
-            Log($"exported 22000 -> {path}");
-            Status = "Hashcat 22000 exported: " + path;
+            Log($"22000 exporté -> {path}");
+            Status = "Hashcat 22000 exporté : " + path;
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("handshakes", "22000 export failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("handshakes", "Échec de l'export 22000", ex); Status = "Erreur : " + ex.Message; }
     }
 
     [RelayCommand]
@@ -164,11 +164,11 @@ public partial class HandshakesVm : ObservableObject
         {
             if (row.Id > 0) await _db.DeleteHandshakeAsync(row.Id);
             _session.RemoveAll(s => Norm(s.FilePath) == Norm(row.FilePath));
-            Log($"deleted {row.FileName}");
+            Log($"supprimé {row.FileName}");
             await RefreshAsync();
-            Status = "Deleted " + row.FileName;
+            Status = "Supprimé " + row.FileName;
         }
-        catch (Exception ex) { _log.Error("handshakes", "delete failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("handshakes", "Échec de la suppression", ex); Status = "Erreur : " + ex.Message; }
     }
 
     /// <summary>DB records merged with just-analyzed session items (dedup by real path).</summary>
@@ -188,7 +188,7 @@ public partial class HandshakesVm : ObservableObject
             Items.Clear();
             foreach (var r in rows) Items.Add(r);
         });
-        Status = $"{rows.Count} capture(s) - {rows.Count(r => r.HasHandshake)} with complete handshake";
+        Status = $"{rows.Count} capture(s) - {rows.Count(r => r.HasHandshake)} avec handshake complet";
     }
 
     private static HandshakeRow Row(HandshakeInfo h) => new()

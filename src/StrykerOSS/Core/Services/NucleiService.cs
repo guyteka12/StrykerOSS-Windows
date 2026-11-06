@@ -48,7 +48,7 @@ public sealed class NucleiService : INucleiService
             var found = FindNuclei();
             if (found != null)
             {
-                log?.Report($"nuclei already present: {found}");
+                log?.Report($"nuclei déjà présent : {found}");
                 return found;
             }
 
@@ -58,7 +58,7 @@ public sealed class NucleiService : INucleiService
             if (File.Exists(destExe))
             {
                 RegisterPath(destExe);
-                log?.Report($"nuclei already present: {destExe}");
+                log?.Report($"nuclei déjà présent : {destExe}");
                 return destExe;
             }
 
@@ -66,21 +66,21 @@ public sealed class NucleiService : INucleiService
             var zipPath = Path.Combine(toolsDir, $"nuclei_{NucleiVersion}_windows_x64.zip.part");
             try
             {
-                log?.Report($"downloading pinned nuclei v{NucleiVersion} (windows x64) from projectdiscovery...");
+                log?.Report($"téléchargement de nuclei v{NucleiVersion} (windows x64, version épinglée) depuis projectdiscovery...");
                 await DownloadAsync(NucleiZipUrl, zipPath, log, ct);
 
-                log?.Report("extracting nuclei.exe ...");
+                log?.Report("extraction de nuclei.exe ...");
                 Directory.CreateDirectory(destDir);
                 using (var zip = ZipFile.OpenRead(zipPath))
                 {
                     var entry = zip.Entries.FirstOrDefault(e => e.Name.Equals("nuclei.exe", StringComparison.OrdinalIgnoreCase))
-                        ?? throw new InvalidOperationException("nuclei.exe entry not found inside the official release zip");
+                        ?? throw new InvalidOperationException("entrée nuclei.exe introuvable dans l'archive zip de la version officielle");
                     entry.ExtractToFile(destExe, overwrite: true);
                 }
 
                 RegisterPath(destExe);
-                log?.Report($"installed: {destExe}");
-                _log.Info("nuclei", $"nuclei v{NucleiVersion} installed at {destExe}");
+                log?.Report($"installé : {destExe}");
+                _log.Info("nuclei", $"nuclei v{NucleiVersion} installé dans {destExe}");
                 return destExe;
             }
             finally
@@ -91,8 +91,8 @@ public sealed class NucleiService : INucleiService
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            _log.Error("nuclei", "install failed", ex);
-            throw new InvalidOperationException($"nuclei install failed: {ex.Message}", ex);
+            _log.Error("nuclei", "échec de l'installation", ex);
+            throw new InvalidOperationException($"échec de l'installation de nuclei : {ex.Message}", ex);
         }
     }
 
@@ -126,11 +126,11 @@ public sealed class NucleiService : INucleiService
             {
                 nextReport += 1 << 20; // report roughly every 1 MB
                 log?.Report(total.HasValue
-                    ? $"  {done / 1048576.0:0.0} / {total.Value / 1048576.0:0.0} MB"
-                    : $"  {done / 1048576.0:0.0} MB");
+                    ? $"  {done / 1048576.0:0.0} / {total.Value / 1048576.0:0.0} Mo"
+                    : $"  {done / 1048576.0:0.0} Mo");
             }
         }
-        log?.Report($"downloaded {done / 1048576.0:0.0} MB");
+        log?.Report($"téléchargé {done / 1048576.0:0.0} Mo");
     }
 
     // ---------------- scan ----------------
@@ -141,11 +141,11 @@ public sealed class NucleiService : INucleiService
         var list = (targets ?? Array.Empty<string>()).Select(t => t.Trim())
             .Where(t => t.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         if (list.Count == 0)
-            throw new ArgumentException("no targets given - enter at least one host or URL", nameof(targets));
+            throw new ArgumentException("aucune cible fournie - saisissez au moins un hôte ou une URL", nameof(targets));
 
         var exe = FindNuclei()
             ?? throw new InvalidOperationException(
-                "nuclei is not installed. Install it on the Web Scanner page (downloads the official pinned projectdiscovery release for Windows).");
+                "nuclei n'est pas installé. Installez-le depuis la page Scanner Web (télécharge la version officielle épinglée de projectdiscovery pour Windows).");
 
         var scansDir = Path.Combine(_settings.EnsureDataDir(), "scans");
         Directory.CreateDirectory(scansDir);
@@ -183,9 +183,9 @@ public sealed class NucleiService : INucleiService
 
         var display = string.Join(' ', psi.ArgumentList.Select(a => a.Contains(' ') ? "\"" + a + "\"" : a));
         log?.Report($"$ \"{exe}\" {display}");
-        log?.Report("note: on first run nuclei downloads its template database into %USERPROFILE%\\nuclei-templates (one time, may take a minute)");
+        log?.Report("note : au premier lancement, nuclei télécharge sa base de modèles dans %USERPROFILE%\\nuclei-templates (une seule fois, peut prendre une minute)");
 
-        _log.Info("nuclei", $"scan started: targets=[{string.Join(',', lines)}] severity=[{string.Join(',', sev)}] tags=[{string.Join(',', tagList)}]");
+        _log.Info("nuclei", $"scan démarré : cibles=[{string.Join(',', lines)}] gravité=[{string.Join(',', sev)}] tags=[{string.Join(',', tagList)}]");
 
         var started = DateTime.Now;
         var sw = Stopwatch.StartNew();
@@ -201,20 +201,20 @@ public sealed class NucleiService : INucleiService
         catch (OperationCanceledException)
         {
             try { proc.Kill(entireProcessTree: true); } catch { /* already gone */ }
-            log?.Report("[cancelled] nuclei terminated");
+            log?.Report("[annulé] nuclei interrompu");
             throw;
         }
         try { await Task.WhenAll(pumpOut, pumpErr); } catch { /* pump errors already swallowed */ }
 
         sw.Stop();
-        log?.Report($"nuclei exited with code {proc.ExitCode} in {sw.Elapsed.TotalSeconds:0.0}s");
+        log?.Report($"nuclei s'est terminé avec le code {proc.ExitCode} en {sw.Elapsed.TotalSeconds:0.0} s");
 
         var findings = ParseResults(outFile, log);
         findings.Sort((a, b) => SeverityRank(b.Severity).CompareTo(SeverityRank(a.Severity)));
 
         var run = new NucleiRun(string.Join(',', lines), started, sw.Elapsed, findings,
             File.Exists(outFile) ? outFile : null);
-        _log.Info("nuclei", $"scan finished: {findings.Count} findings in {sw.Elapsed.TotalSeconds:0.0}s -> {outFile}");
+        _log.Info("nuclei", $"scan terminé : {findings.Count} constats en {sw.Elapsed.TotalSeconds:0.0} s -> {outFile}");
         return run;
     }
 
@@ -279,7 +279,7 @@ public sealed class NucleiService : INucleiService
             }
             catch (JsonException jex)
             {
-                _log.Warn("nuclei", $"skipping malformed result line: {jex.Message}");
+                _log.Warn("nuclei", $"ligne de résultat mal formée ignorée : {jex.Message}");
             }
         }
         return findings;

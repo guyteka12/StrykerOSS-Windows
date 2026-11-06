@@ -16,12 +16,12 @@ public partial class ArsenalVm : ObservableObject
     private CancellationTokenSource? _cts;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private ArsenalTemplate? _selectedTemplate;
 
     // editor fields
     [ObservableProperty] private string _editName = "";
-    [ObservableProperty] private string _editCategory = "recon";
+    [ObservableProperty] private string _editCategory = "reconnaissance";
     [ObservableProperty] private string _editCommand = "";
     [ObservableProperty] private string _editDescription = "";
 
@@ -55,12 +55,12 @@ public partial class ArsenalVm : ObservableObject
                 foreach (var t in list) Templates.Add(t);
                 if (SelectedTemplate is null && Templates.Count > 0) SelectedTemplate = Templates[0];
             });
-            Status = $"{list.Count} templates";
+            Status = $"{list.Count} modèles";
         }
         catch (Exception ex)
         {
-            _log.Error("arsenal", "load failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("arsenal", "Échec du chargement", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -99,23 +99,23 @@ public partial class ArsenalVm : ObservableObject
     private void NewTemplate()
     {
         SelectedTemplate = null;
-        EditName = "New template";
-        EditCategory = "recon";
+        EditName = "Nouveau modèle";
+        EditCategory = "reconnaissance";
         EditCommand = "";
         EditDescription = "";
-        Status = "new draft - fill fields and Save (inserts as new)";
+        Status = "nouveau brouillon - remplissez les champs puis Enregistrer (inséré comme nouveau)";
     }
 
     [RelayCommand]
     private void DuplicateTemplate()
     {
-        if (SelectedTemplate is not { } sel) { Status = "select a template first"; return; }
-        EditName = sel.Name + " (copy)";
+        if (SelectedTemplate is not { } sel) { Status = "sélectionnez d'abord un modèle"; return; }
+        EditName = sel.Name + " (copie)";
         EditCategory = sel.Category;
         EditCommand = sel.Command;
         EditDescription = sel.Description;
         SelectedTemplate = null; // clears list selection; draft keeps copied fields
-        Status = "copied - adjust and Save (inserts as new)";
+        Status = "copié - ajustez puis Enregistrer (inséré comme nouveau)";
     }
 
     [RelayCommand]
@@ -124,7 +124,7 @@ public partial class ArsenalVm : ObservableObject
         if (IsBusy) return;
         if (string.IsNullOrWhiteSpace(EditName) || string.IsNullOrWhiteSpace(EditCommand))
         {
-            Status = "name and command are required";
+            Status = "le nom et la commande sont obligatoires";
             return;
         }
         IsBusy = true;
@@ -139,10 +139,10 @@ public partial class ArsenalVm : ObservableObject
                 var match = Templates.FirstOrDefault(x => x.Id == newId);
                 if (match is not null) SelectedTemplate = match;
             });
-            Status = $"saved '{t.Name}' (#{newId})";
+            Status = $"enregistré '{t.Name}' (#{newId})";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("arsenal", "save failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("arsenal", "Échec de l'enregistrement", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -150,18 +150,18 @@ public partial class ArsenalVm : ObservableObject
     private async Task DeleteTemplateAsync(CancellationToken ct)
     {
         if (IsBusy) return;
-        if (SelectedTemplate is not { } sel) { Status = "select a saved template to delete"; return; }
-        if (sel.Id <= 0) { Status = "unsaved draft - nothing to delete"; return; }
+        if (SelectedTemplate is not { } sel) { Status = "sélectionnez un modèle enregistré à supprimer"; return; }
+        if (sel.Id <= 0) { Status = "brouillon non enregistré - rien à supprimer"; return; }
         IsBusy = true;
         try
         {
             await _arsenal.DeleteAsync(sel.Id);
-            _log.Info("arsenal", $"template deleted #{sel.Id}");
+            _log.Info("arsenal", $"modèle supprimé #{sel.Id}");
             SelectedTemplate = null;
             await LoadAsync(seed: false);
-            Status = "deleted";
+            Status = "supprimé";
         }
-        catch (Exception ex) { _log.Error("arsenal", "delete failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("arsenal", "Échec de la suppression", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -174,9 +174,9 @@ public partial class ArsenalVm : ObservableObject
         {
             await _arsenal.SeedIfEmptyAsync();
             await LoadAsync(seed: false);
-            Status = "seed checked (adds the 6 built-in templates when the list is empty)";
+            Status = "initialisation vérifiée (ajoute les 6 modèles intégrés lorsque la liste est vide)";
         }
-        catch (Exception ex) { _log.Error("arsenal", "seed failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("arsenal", "Échec de l'initialisation", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -186,12 +186,12 @@ public partial class ArsenalVm : ObservableObject
     private async Task ExecuteAsync(CancellationToken ct)
     {
         if (IsBusy) return;
-        if (SelectedTemplate is not { } sel) { Status = "select a template to execute"; return; }
-        if (string.IsNullOrWhiteSpace(ExeIp)) { Status = "enter a target IP first"; return; }
+        if (SelectedTemplate is not { } sel) { Status = "sélectionnez un modèle à exécuter"; return; }
+        if (string.IsNullOrWhiteSpace(ExeIp)) { Status = "saisissez d'abord une IP cible"; return; }
 
         IsBusy = true;
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        Status = "executing...";
+        Status = "exécution...";
         App.Current.Dispatcher.Invoke(() => Output.Clear());
         try
         {
@@ -199,11 +199,11 @@ public partial class ArsenalVm : ObservableObject
             var text = await Task.Run(async () =>
                 await _arsenal.ExecuteAsync(sel, ExeIp, ExePort, ExeMac, ExeGw, ExeMask, prog, _cts.Token),
                 _cts.Token);
-            Status = $"finished ({text.Length} chars output)";
-            _log.Info("arsenal", $"executed '{sel.Name}'");
+            Status = $"terminé ({text.Length} caractères de sortie)";
+            _log.Info("arsenal", $"exécuté '{sel.Name}'");
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("arsenal", "execute failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("arsenal", "Échec de l'exécution", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; _cts?.Dispose(); _cts = null; }
     }
 
@@ -212,6 +212,6 @@ public partial class ArsenalVm : ObservableObject
     {
         if (_cts is null) return;
         _cts.Cancel();
-        Status = "cancelling...";
+        Status = "annulation...";
     }
 }

@@ -13,6 +13,7 @@ public sealed class AppSettings
 {
     public bool ConsentAccepted { get; set; }
     public DateTime? ConsentDate { get; set; }
+    public bool InitialSetupDone { get; set; }
     public string DataDir { get; set; } = "";
     public string ToolsDir { get; set; } = "";
     public string? NmapPath { get; set; }
@@ -22,7 +23,7 @@ public sealed class AppSettings
     public int MsfRpcPort { get; set; } = 55553;
     public string MsfRpcUser { get; set; } = "msf";
     public string MsfRpcPass { get; set; } = "";
-    public string DefaultAuthor { get; set; } = "StrykerOSS Operator";
+    public string DefaultAuthor { get; set; } = "Opérateur StrykerOSS";
 }
 
 public record LogEntry(int Id, DateTime Time, string Level, string Source, string Message);
@@ -346,6 +347,29 @@ public interface IToolsManager
     Task<List<ToolStatus>> StatusAsync();
     Task<bool> InstallAsync(string key, IProgress<string>? log = null, CancellationToken ct = default);
     string ToolsDir();
+}
+
+#endregion
+
+#region Provisioning (assistant de première configuration - installations réelles)
+
+/// <summary>État d'un composant installable par l'assistant de première configuration.</summary>
+public record ProvisionItem(
+    string Key,
+    string Name,
+    string Description,
+    string SizeHint,
+    bool Optional,
+    bool Installed,
+    string? Detail);
+
+public interface IProvisioning
+{
+    /// <summary>Détecte l'état réel de chaque composant (binaire présent + sonde de version).</summary>
+    Task<List<ProvisionItem>> CheckAsync();
+
+    /// <summary>Installe réellement un composant (winget / MSI / zip officiel) et rend true si réussi.</summary>
+    Task<bool> InstallAsync(string key, IProgress<string>? log = null, CancellationToken ct = default);
 }
 
 #endregion

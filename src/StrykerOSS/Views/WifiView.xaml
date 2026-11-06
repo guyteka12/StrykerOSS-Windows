@@ -10,8 +10,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Wi-Fi Networks" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real scan, connect and profile management through the built-in Windows wireless adapter (Native Wifi API)." Style="{StaticResource Caption}"/>
+            <TextBlock Text="Réseaux Wi-Fi" Style="{StaticResource H1}"/>
+            <TextBlock Text="Scan réel, connexion et gestion de profils via la carte sans fil intégrée de Windows (API Native Wifi)." Style="{StaticResource Caption}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -30,7 +30,7 @@
                 <!-- adapters card -->
                 <Border Grid.Row="0" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="ADAPTERS" Style="{StaticResource Section}"/>
+                        <TextBlock Text="ADAPTATEURS" Style="{StaticResource Section}"/>
                         <ItemsControl ItemsSource="{Binding Adapters}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -47,7 +47,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock Text="CONNECTED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                <TextBlock Text="CONNECTÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                             </Border>
                                             <Border Margin="8,0,0,0">
                                                 <Border.Style>
@@ -59,7 +59,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock Text="DISCONNECTED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                <TextBlock Text="DÉCONNECTÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                             </Border>
                                             <TextBlock Text="{Binding Description, StringFormat=' - {0}'}" Style="{StaticResource Caption}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                             <TextBlock Margin="8,0,0,0" VerticalAlignment="Center">
@@ -88,9 +88,9 @@
                 <Border Grid.Row="1" Style="{StaticResource Card}">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-                            <Button Content="Scan" Style="{StaticResource BtnPrimary}" Command="{Binding ScanCommand}"/>
-                            <Button Content="Cancel" Style="{StaticResource BtnGhost}" Margin="8,0,0,0" Command="{Binding ScanCancelCommand}"/>
-                            <Button Content="Refresh" Style="{StaticResource BtnGhost}" Margin="8,0,0,0" Command="{Binding LoadCommand}"/>
+                            <Button Content="Scanner" Style="{StaticResource BtnPrimary}" Command="{Binding ScanCommand}"/>
+                            <Button Content="Annuler" Style="{StaticResource BtnGhost}" Margin="8,0,0,0" Command="{Binding ScanCancelCommand}"/>
+                            <Button Content="Actualiser" Style="{StaticResource BtnGhost}" Margin="8,0,0,0" Command="{Binding LoadCommand}"/>
                             <ProgressBar Style="{StaticResource ProgressAccent}" Width="120" IsIndeterminate="{Binding IsBusy}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                             <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="12,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -120,7 +120,7 @@
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Border.Style>
-                                                    <TextBlock Text="CONNECTED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                    <TextBlock Text="CONNECTÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Text="{Binding Bssid}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
@@ -156,18 +156,18 @@
                     <!-- selected network / connect -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="SELECTED NETWORK" Style="{StaticResource Section}"/>
-                            <TextBlock Text="{Binding SelectedNetwork.Ssid, FallbackValue='Nothing selected', TargetNullValue='Nothing selected'}"
+                            <TextBlock Text="RÉSEAU SÉLECTIONNÉ" Style="{StaticResource Section}"/>
+                            <TextBlock Text="{Binding SelectedNetwork.Ssid, FallbackValue='Aucune sélection', TargetNullValue='Aucune sélection'}"
                                        Style="{StaticResource H2}" TextWrapping="Wrap"/>
-                            <TextBlock Text="{Binding SelectedNetwork.Bssid, FallbackValue='Pick a network from the list', TargetNullValue='Pick a network from the list'}"
+                            <TextBlock Text="{Binding SelectedNetwork.Bssid, FallbackValue='Choisissez un réseau dans la liste', TargetNullValue='Choisissez un réseau dans la liste'}"
                                        Style="{StaticResource Caption}"/>
-                            <TextBlock Text="Passphrase / key" Style="{StaticResource Caption}" Margin="0,12,0,4"/>
+                            <TextBlock Text="Phrase secrète / clé" Style="{StaticResource Caption}" Margin="0,12,0,4"/>
                             <PasswordBox Style="{StaticResource PassBox}"
                                          vms:PasswordHelper.Bind="True"
                                          vms:PasswordHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                <Button Content="Connect" Style="{StaticResource BtnPrimary}" Command="{Binding ConnectCommand}"/>
-                                <Button Content="Disconnect" Style="{StaticResource BtnDanger}" Margin="8,0,0,0" Command="{Binding DisconnectCommand}"/>
+                                <Button Content="Se connecter" Style="{StaticResource BtnPrimary}" Command="{Binding ConnectCommand}"/>
+                                <Button Content="Se déconnecter" Style="{StaticResource BtnDanger}" Margin="8,0,0,0" Command="{Binding DisconnectCommand}"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -175,7 +175,7 @@
                     <!-- profiles -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="SAVED PROFILES" Style="{StaticResource Section}"/>
+                            <TextBlock Text="PROFILS ENREGISTRÉS" Style="{StaticResource Section}"/>
                             <ListBox ItemsSource="{Binding Profiles}"
                                      SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"
                                      Background="Transparent" BorderThickness="0" MaxHeight="190"
@@ -197,7 +197,7 @@
                                             <Border Grid.Column="1" Style="{StaticResource BadgeInfo}" Margin="8,0,8,0">
                                                 <TextBlock Text="{Binding Auth}" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                             </Border>
-                                            <Button Grid.Column="2" Content="Delete" Style="{StaticResource BtnDanger}" FontSize="11" Padding="8,4"
+                                            <Button Grid.Column="2" Content="Supprimer" Style="{StaticResource BtnDanger}" FontSize="11" Padding="8,4"
                                                     Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"/>
                                         </Grid>
@@ -210,18 +210,18 @@
                     <!-- note -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="REAL HARDWARE" Style="{StaticResource Section}"/>
+                            <TextBlock Text="MATÉRIEL RÉEL" Style="{StaticResource Section}"/>
                             <TextBlock Style="{StaticResource Caption}"
-                                       Text="Uses the built-in Windows Wi-Fi adapter (Native Wifi API) — no external hardware required."/>
+                                       Text="Utilise la carte Wi-Fi intégrée de Windows (API Native Wifi) — aucun matériel externe requis."/>
                         </StackPanel>
                     </Border>
 
                     <!-- educational reminder -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="EDUCATIONAL USE ONLY" Style="{StaticResource Section}"/>
+                            <TextBlock Text="USAGE ÉDUCATIF UNIQUEMENT" Style="{StaticResource Section}"/>
                             <TextBlock Style="{StaticResource Caption}"
-                                       Text="Connecting to, scanning or profiling networks you do not own or lack written permission to test is illegal. Use this module only on your own lab networks."/>
+                                       Text="Scanner, connecter ou profiler des réseaux dont vous n'êtes pas propriétaire ou sans autorisation écrite est illégal. Utilisez ce module uniquement sur vos propres réseaux de laboratoire."/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

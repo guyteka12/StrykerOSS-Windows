@@ -53,7 +53,7 @@ public sealed class MetasploitService : IMetasploit
             var port = _settings.Value.MsfRpcPort;
             var user = _settings.Value.MsfRpcUser;
             var pass = _settings.Value.MsfRpcPass;
-            log?.Report($"Connecting MSGRPC {host}:{port} as {user} ...");
+            log?.Report($"Connexion MSGRPC {host}:{port} en tant que {user} ...");
 
             var result = await RpcCoreAsync("auth.login", ct, new object[] { user, pass });
             var token = result switch
@@ -62,11 +62,11 @@ public sealed class MetasploitService : IMetasploit
                 IDictionary<object, object> d => GetStr(d, "token"),
                 _ => null
             };
-            if (string.IsNullOrEmpty(token)) throw new Exception("auth.login returned no token");
+            if (string.IsNullOrEmpty(token)) throw new Exception("auth.login n'a retourné aucun token");
 
             _token = token;
             IsConnected = true;
-            log?.Report("MSGRPC connected.");
+            log?.Report("MSGRPC connecté.");
             _log.Info("msf", $"MSGRPC connected to {host}:{port}");
             return true;
         }
@@ -75,7 +75,7 @@ public sealed class MetasploitService : IMetasploit
         {
             _token = null;
             IsConnected = false;
-            log?.Report($"MSGRPC connect failed: {ex.Message}");
+            log?.Report($"Échec de connexion MSGRPC : {ex.Message}");
             _log.Error("msf", "MSGRPC connect failed", ex);
             return false;
         }
@@ -184,8 +184,8 @@ public sealed class MetasploitService : IMetasploit
         string cid = created is IDictionary<object, object> cc && cc.TryGetValue("id", out var idObj)
             ? idObj?.ToString() ?? ""
             : "";
-        if (string.IsNullOrEmpty(cid)) throw new Exception("console.create failed - no console id returned");
-        log?.Report($"msfrpcd console {cid} created for {module}");
+        if (string.IsNullOrEmpty(cid)) throw new Exception("console.create a échoué - aucun identifiant de console retourné");
+        log?.Report($"Console msfrpcd {cid} créée pour {module}");
         try
         {
             var script = new StringBuilder();
@@ -215,7 +215,7 @@ public sealed class MetasploitService : IMetasploit
                     break;
                 }
             }
-            log?.Report($"console read finished ({collected.Length} chars)");
+            log?.Report($"Lecture de la console terminée ({collected.Length} caractères)");
             return collected.ToString();
         }
         finally
@@ -230,7 +230,7 @@ public sealed class MetasploitService : IMetasploit
         string outFile, IProgress<string>? log = null, CancellationToken ct = default)
     {
         var msfvenom = _msfvenomPath ?? _tools.ResolveTool("msfvenom")
-            ?? throw new InvalidOperationException("msfvenom not found - install Metasploit Framework (see Tools Manager).");
+            ?? throw new InvalidOperationException("msfvenom introuvable - installez le Metasploit Framework (voir le Gestionnaire d'outils).");
 
         var full = Path.GetFullPath(outFile);
         var dir = Path.GetDirectoryName(full);
@@ -253,8 +253,8 @@ public sealed class MetasploitService : IMetasploit
         psi.ArgumentList.Add("-o");
         psi.ArgumentList.Add(full);
 
-        log?.Report($"Running: msfvenom -p {payload} LHOST={lhost} LPORT={lport} -f {format}");
-        using var pr = Process.Start(psi) ?? throw new Exception("failed to start msfvenom process");
+        log?.Report($"Exécution : msfvenom -p {payload} LHOST={lhost} LPORT={lport} -f {format}");
+        using var pr = Process.Start(psi) ?? throw new Exception("échec du démarrage du processus msfvenom");
         var errTail = new StringBuilder();
         pr.OutputDataReceived += (_, e) =>
         {
@@ -274,13 +274,13 @@ public sealed class MetasploitService : IMetasploit
 
         if (File.Exists(full))
         {
-            log?.Report($"Payload written: {full}");
+            log?.Report($"Payload écrit : {full}");
             _log.Info("msf", $"payload generated: {full}");
             return full;
         }
         var tail = errTail.ToString();
         if (tail.Length > 800) tail = tail[^800..];
-        throw new Exception($"msfvenom failed (exit {pr.ExitCode}): {tail.Trim()}");
+        throw new Exception($"msfvenom a échoué (code de sortie {pr.ExitCode}) : {tail.Trim()}");
     }
 
     // ---- MSGRPC plumbing (real MessagePack msgpack-rpc protocol) ----
@@ -291,7 +291,7 @@ public sealed class MetasploitService : IMetasploit
     private async Task<object?> RpcCoreAsync(string method, CancellationToken ct, object[] args)
     {
         if (method != "auth.login" && _token == null)
-            throw new InvalidOperationException("Not connected to msfrpcd - connect first.");
+            throw new InvalidOperationException("Non connecté à msfrpcd - connectez-vous d'abord.");
 
         var call = new List<object>();
         if (method != "auth.login") call.Add(_token!); // msf convention: token first arg (except auth.login)
@@ -311,18 +311,18 @@ public sealed class MetasploitService : IMetasploit
         var obj = MessagePackSerializer.Deserialize<object>(respBytes, PrimitiveObjectResolver.Options);
 
         if (obj is not object[] arr || arr.Length < 4)
-            throw new Exception("Malformed MSGRPC response frame.");
+            throw new Exception("Trame de réponse MSGRPC malformée.");
         if (Convert.ToInt64(arr[1], CultureInfo.InvariantCulture) != msgid)
-            throw new Exception("MSGRPC response msgid mismatch.");
+            throw new Exception("Incohérence du msgid dans la réponse MSGRPC.");
         if (arr[2] != null)
-            throw new Exception(arr[2].ToString() ?? "MSGRPC error");
+            throw new Exception(arr[2].ToString() ?? "Erreur MSGRPC");
         return arr[3];
     }
 
     private void EnsureConnected()
     {
         if (!IsConnected || _token == null)
-            throw new InvalidOperationException("Not connected to msfrpcd - connect first (start msfrpcd -P pass -S false).");
+            throw new InvalidOperationException("Non connecté à msfrpcd - connectez-vous d'abord (démarrez msfrpcd -P pass -S false).");
     }
 
     // ---- helpers ----

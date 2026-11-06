@@ -13,8 +13,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="USB Arsenal" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real USB PnP enumeration, ISO mounting (Mount-DiskImage) and removable-drive eject."
+            <TextBlock Text="Arsenal USB" Style="{StaticResource H1}"/>
+            <TextBlock Text="Énumération PnP USB réelle, montage d'ISO (Mount-DiskImage) et éjection des lecteurs amovibles."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -29,7 +29,7 @@
                 <Border Style="{StaticResource Card}">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-                            <Button Content="Refresh" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
+                            <Button Content="Actualiser" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
                             <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="12,0,0,0"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -64,7 +64,7 @@
                                                         </Border>
                                                         <Border Style="{StaticResource BadgeSuccess}" Margin="6,0,0,0"
                                                                 Visibility="{Binding IsStorage, Converter={StaticResource BoolToVis}}">
-                                                            <TextBlock Text="STORAGE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                            <TextBlock Text="STOCKAGE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                         </Border>
                                                     </StackPanel>
                                                     <TextBlock Text="{Binding Manufacturer}" Style="{StaticResource Caption}"/>
@@ -75,7 +75,7 @@
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
                                                     <TextBlock Text="{Binding DetailText}" Style="{StaticResource Caption}"
                                                                HorizontalAlignment="Right" Margin="0,0,0,6"/>
-                                                    <Button Content="Eject" Style="{StaticResource BtnDanger}"
+                                                    <Button Content="Éjecter" Style="{StaticResource BtnDanger}"
                                                             HorizontalAlignment="Right"
                                                             Visibility="{Binding IsStorage, Converter={StaticResource BoolToVis}}"
                                                             Command="{Binding DataContext.EjectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -92,16 +92,16 @@
 
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="MOUNT ISO" Style="{StaticResource Section}"/>
+                        <TextBlock Text="MONTER L'ISO" Style="{StaticResource Section}"/>
                         <StackPanel Orientation="Horizontal">
                             <TextBox Style="{StaticResource InputBox}" Width="420"
                                      Text="{Binding IsoPath, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Content="Browse..." Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                            <Button Content="Parcourir..." Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
                                     Command="{Binding BrowseIsoCommand}"/>
-                            <Button Content="Mount" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0"
+                            <Button Content="Monter" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0"
                                     Command="{Binding MountCommand}"/>
                         </StackPanel>
-                        <TextBlock Text="Mounts a real disc image as a new drive letter via Mount-DiskImage -PassThru."
+                        <TextBlock Text="Monte une véritable image disque comme nouvelle lettre de lecteur via Mount-DiskImage -PassThru."
                                    Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
@@ -110,7 +110,7 @@
             <!-- side column -->
             <Border Grid.Column="1" Style="{StaticResource Card}">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="LOG" Style="{StaticResource Section}"/>
+                    <TextBlock DockPanel.Dock="Top" Text="JOURNAL" Style="{StaticResource Section}"/>
                     <ListBox Background="{StaticResource Card2Brush}" BorderThickness="0" Padding="8"
                              ItemsSource="{Binding Log}" FontFamily="Consolas" FontSize="11"
                              Foreground="{StaticResource TextBrush}" Height="480"

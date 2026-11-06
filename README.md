@@ -1,103 +1,94 @@
 # StrykerOSS — Windows
 
-> A free and open-source **desktop pentest suite for Windows**. Authorized testing only.
-> Windows port of [zalexdev/strykerapp](https://github.com/zalexdev/strykerapp) (Android) — same architecture and feature set, real functionality only, **GPL-3.0**.
+> Suite de test d'intrusion de bureau **gratuite et open-source pour Windows**. Tests autorisés uniquement.
+> Portage Windows de [zalexdev/strykerapp](https://github.com/zalexdev/strykerapp) (Android) — même architecture et mêmes fonctionnalités, fonctionnement réel uniquement, **GPL-3.0**.
 
-**StrykerOSS Windows** reimplémente la suite StrykerOSS mobile en **véritable logiciel Windows natif** (WPF, .NET 8, fichier unique auto-suffisant). Là où l'app Android utilisait le **root du téléphone + un chroot Debian**, la version Windows utilise les **droits Administrateur Windows (UAC)** et les **API natives Windows** — **aucun matériel externe requis** (Wi-Fi et Bluetooth intégrés).
+**StrykerOSS Windows** réimplémente la suite mobile StrykerOSS en **véritable logiciel Windows natif** (WPF, .NET 8, fichier unique auto-suffisant). Là où l'app Android utilisait le **root du téléphone + un chroot Debian**, la version Windows utilise les **droits Administrateur Windows (UAC)** et les **API natives Windows** — **aucun matériel externe requis** (Wi-Fi et Bluetooth intégrés à la machine).
 
----
-
-## ⚠️ Ethics first — Authorized testing only
-
-StrykerOSS is provided for **EDUCATIONAL purposes only**.
-
-- Only scan, test or audit systems **you own** or have **explicit written permission** to test.
-- Unauthorized access to computer systems is **illegal** in most jurisdictions.
-- The app enforces an on-start consent agreement and logs all activity locally.
-- Ethics > Everything. Always get permission. Respect systems and data.
+**L'interface est intégralement en français.**
 
 ---
 
-## Install
+## ⚠️ L'éthique d'abord — Tests autorisés uniquement
 
-| Package | Description |
+StrykerOSS est fourni à des fins **ÉDUCATIVES uniquement**.
+
+- Ne scannez, ne testez et n'auditez que des systèmes **qui vous appartiennent** ou pour lesquels vous disposez d'une **autorisation écrite explicite**.
+- L'accès non autorisé à des systèmes informatiques est **illégal** dans la plupart des juridictions.
+- L'application impose un accord de consentement au démarrage et consigne toute l'activité localement.
+- L'éthique avant tout. Obtenez toujours la permission. Respectez les systèmes et les données.
+
+---
+
+## Installation
+
+| Paquet | Description |
 |---|---|
-| `StrykerOSS-Setup-1.0.0.exe` | Installer (Inno Setup): Start-menu + desktop shortcuts, uninstaller, GPL license page. |
-| `StrykerOSS-portable.exe` | Portable single-file build (~self-contained .NET 8, no runtime install needed). |
+| `StrykerOSS-Setup-1.1.0.exe` | Installeur (Inno Setup, en français) : raccourcis menu Démarrer + bureau, désinstalleur, page de licence GPL. |
+| `StrykerOSS-portable.exe` | Version portable en fichier unique (.NET 8 auto-suffisant, aucun runtime à installer). |
 
-The app **requires Administrator privileges** (Windows UAC prompt) — this is the Windows equivalent of Android root: Native Wi-Fi control, MAC address changes, adapter restarts and raw ARP all need elevation.
+L'application **exige les privilèges Administrateur** (invite UAC Windows) — c'est l'équivalent Windows du root Android : le contrôle Wi-Fi natif, les changements d'adresse MAC, les redémarrages d'adaptateurs et l'ARP brut exigent l'élévation.
 
-Both artifacts are produced automatically by **GitHub Actions** on every push (see `.github/workflows/build-windows.yml`) and attached to the run's artifacts / releases.
+Les deux artefacts sont produits automatiquement par **GitHub Actions** à chaque poussée (voir `.github/workflows/build-windows.yml`) et joints aux artefacts / releases du run.
 
-## Feature mapping (Android → Windows)
+---
 
-| Android (strykerapp) | Windows (this project) | Real implementation |
-|---|---|---|
-| Root / su | **UAC Administrator** (app manifest `requireAdministrator`) | `WindowsPrincipal` elevation check |
-| Wi-Fi scan (root or USB monitor adapter) | **Wi-Fi Networks** — scan, connect, profiles | **Native Wifi API** (`wlanapi.dll`) on the **built-in adapter — no external hardware** |
-| Handshake capture (monitor mode) | **Handshakes** — real `.pcap/.cap/.pcapng` EAPOL forensic parser + **hashcat 22000 export** | Hand-rolled pcap/pcapng + 802.11 + EAPOL parser (monitor-mode *capture* physically impossible on Windows stock stack — analysis of lab captures is real) |
-| MAC changer | **MAC Changer** | Real registry `NetworkAddress` override + adapter restart (`netsh`), random locally-administered MAC, profiles in DB |
-| Local network (Nmap discovery) | **Local Network** | Real ICMP ping sweep + `SendARP` + DNS + **IEEE OUI vendor lookup** (bundled, 40k+ real entries) |
-| Nmap | **Nmap Scanner** | Real `nmap.exe` wrapper: profiles, live output, XML parsing, HTML export |
-| Web scanner (Nuclei) | **Web Scanner** | Real `nuclei` binary (auto-download pinned release), JSON findings, severity grouping, CSV export |
-| Arsenal (templates + args) | **Arsenal** | Real command templates with `{IP} {PORT} {MAC} {GW} {MASK}` substitution + real execution |
-| Exploit DB (SearchSploit) | **Exploit Database** | Real offline search over the official Exploit-DB CSV + real file fetch |
-| WhisperPair (BLE / Fast Pair) | **WhisperPair (BLE)** | Real `BluetoothLEAdvertisementWatcher` (built-in BT), Fast Pair model decode, real GATT enumeration |
-| HID attacks (USB gadget DuckyScript) | **HID Attacks** | Real DuckyScript parser + real `SendInput` execution **on this machine** (layout-aware via `VkKeyScanW`) — the Windows equivalent of a USB-Rubber-Ducky is not possible without gadget hardware |
-| USB Arsenal (gadget profiles) | **USB Arsenal** | Real USB/PnP enumeration, real ISO mount (`Mount-DiskImage`), real eject |
-| Metasploit (chroot console) | **Metasploit** | Real detection + **MSGRPC client** (MessagePack), sessions, module search, console run, `msfvenom` payload generation |
-| GeoMac (OSM of BSSIDs) | **GeoMac** | Real ip-api geolocation, real WiGLE CSV import, KML/CSV export, OSM links |
-| Terminal (chroot) | **Console** | Real elevated PowerShell / cmd / WSL process |
-| Core manager (chroot mount/repair) | **Tools Manager** | Real install/verify for Nmap, Nuclei, Metasploit, Hashcat (`winget` when available) |
-| Sessions / Reports / Projects | **Sessions / Reports / Projects** | Real SQLite database (WAL), real PDF (QuestPDF) / HTML / Markdown reports, project backup ZIP |
-| — | **Dashboard / Logs / Settings** | Real local stats, live log file + viewer, settings persisted as JSON |
+## Première configuration (assistant d'installation)
 
-Everything is **real**: real sockets, real APIs, real processes, real files. No simulation, no fake data.
+Au **premier lancement**, après l'accord de consentement, l'**assistant de première configuration** s'ouvre automatiquement. Il installe **réellement** (aucune simulation) tout ce dont la plateforme a besoin — l'installation peut être lourde, tout est automatisé :
 
-## Optional external tools
+| Composant | Méthode principale | Méthode de secours intégrée | Taille |
+|---|---|---|---|
+| **Nmap + Npcap** | `winget install Insecure.Nmap` | Installeur officiel `nmap.org` en silencieux (`/S`, Npcap inclus) | ≈ 40 Mo |
+| **Nuclei** | Archive officielle projectdiscovery (GitHub) | — (téléchargement direct toujours possible) | ≈ 60 Mo |
+| **Hashcat** | `winget install hashcat.hashcat` | `choco install hashcat` si Chocolatey présent, sinon mode d'emploi | ≈ 100 Mo |
+| **Wireshark / tshark** | `winget install Wireshark.Wireshark` | Installeur officiel `wireshark.org` silencieux | ≈ 90 Mo |
+| **Metasploit** (optionnel) | MSI officiel Rapid7 via `msiexec /qn` | `winget install Metasploit.Framework` | ≈ 1 Go |
+| **Index Exploit-DB** | CSV officiel GitLab (recherche hors ligne ensuite) | — | ≈ 20 Mo |
 
-| Tool | Needed for | Install |
-|---|---|---|
-| [Nmap](https://nmap.org/download) | advanced network scanning | `winget install Insecure.Nmap` or Tools Manager |
-| Nuclei | web scanning | **auto-downloaded** (pinned official release) from Tools Manager / Web Scanner |
-| [Metasploit](https://www.metasploit.com/download) | exploit sessions / payloads | manual install or WSL; then start `msfrpcd -P <pass> -S false` |
-| [Hashcat](https://hashcat.net/hashcat/) | cracking exported 22000 hashes | `winget install hashcat.hashcat` |
+L'assistant est **rappelable à tout moment** : onglet **Gestionnaire d'outils → « Relancer l'assistant d'installation »**.
 
-Everything else works out of the box with **zero external hardware and zero dependencies**.
+### ❓ Que faire si l'installation automatique échoue (méthodes de secours manuelles)
 
-## Data & privacy
+1. **winget introuvable** (rare) : installez « **Programmes d'installation d'applications** » depuis le Microsoft Store, puis relancez l'assistant. L'assistant bascule alors automatiquement sur les méthodes de secours (installeurs officiels silencieux).
+2. **Nmap manuel** : téléchargez https://nmap.org/dist/nmap-7.95-setup.exe → installation normale (laissez cocher Npcap) → relancez StrykerOSS, la détection est automatique (`C:\Program Files\Nmap\nmap.exe`).
+3. **Nuclei manuel** : https://github.com/projectdiscovery/nuclei/releases → `nuclei_3.3.9_windows_x64.zip` → décompressez `nuclei.exe` dans le dossier outils (`%LOCALAPPDATA%\StrykerOSS\tools`) ou renseignez le chemin dans **Paramètres**.
+4. **Hashcat manuel** : https://hashcat.net/hashcat/ → décompressez `hashcat.exe` dans le dossier outils.
+5. **Metasploit manuel** : https://windows.metasploit.com/metasploitframework-latest.msi (double-clic = installation normale) → puis dans **Paramètres**, pointez le chemin vers `msfconsole.bat`. Alternative : Kali Linux dans **WSL** (`wsl --install`) puis `sudo apt install metasploit-framework`.
+6. **Wireshark manuel** : https://www.wireshark.org/download.html (l'option « Tshark » en ligne de commande est utile aux modules d'analyse).
+7. **Sans Internet** : tous les modules qui utilisent les API natives Windows (Wi-Fi, réseau local, ports, MAC, USB, HID, sessions, rapports, journaux) fonctionnent **sans aucun outil externe**. Les outils externes ne sont nécessaires que pour Nmap/Web/Metasploit/Hashcat/Exploit-DB.
+8. **Le service Wi-Fi refuse** (erreur Win32) : démarrez le service « **Configuration automatique WLAN** » (`services.msc` → WlanSvc → Démarrer, type : Automatique).
 
-All data stays on your machine: `%LOCALAPPDATA%\StrykerOSS\` (SQLite DB, reports, scans, captures, logs, settings). No telemetry, no accounts, no tracking.
+---
 
-## Build from source
-
-```powershell
-dotnet publish src/StrykerOSS/StrykerOSS.csproj -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
-```
-
-Requirements: Windows 10+ (x64), .NET 8 SDK. CI builds on `windows-latest` with Inno Setup producing the installer.
-
-## Architecture
+## Architecture (identique à l'app Android)
 
 ```
 src/StrykerOSS/
-├── App.xaml(.cs)            # DI composition root, consent gate
-├── Pages.cs                 # navigation registry (21 modules)
-├── Themes/Dark.xaml         # design tokens (single source of truth)
-├── Core/Contracts.cs        # models + service interfaces (architecture map)
-├── Core/Services/           # 17 real implementations
-├── ViewModels/              # CommunityToolkit.Mvvm
-└── Views/                   # WPF views (dark theme)
+├── App.xaml(.cs)          Point d'entrée DI + consentement + assistant 1ère config + filets de sécurité
+├── Pages.cs               Registre des pages (sûr : une page en erreur n'arrête jamais l'app)
+├── Core/
+│   ├── Contracts.cs       Tous les contrats/records (équivalent des contrats Stryker mobile)
+│   └── Services/          Services RÉELS : wlanapi natif, SQLite, registre, SendInput, MSGRPC, QuestPDF...
+├── ViewModels/            MVVM (CommunityToolkit) — un VM par module
+├── Views/                 21 modules + assistant de configuration
+└── Themes/Dark.xaml       Thème sombre unique (jetons de design)
 ```
 
-Service-per-module architecture mirrors the Android app's module structure. Swapping any backend keeps the UI intact.
+Modules : Tableau de bord, Réseaux Wi-Fi (scan/connexion/profils via **Native Wifi API**), Réseau local (ICMP+ARP+DNS réels), Scanner Nmap, Scanner web (Nuclei), Base d'exploits (hors ligne), Arsenal (modèles de commandes), Handshakes (analyse EAPOL pcap + export hashcat 22000), WhisperPair (BLE réel), Changeur d'adresse MAC (registre, réel), Attaques HID (DuckyScript + SendInput réel), Arsenal USB, Metasploit (MSGRPC réel + msfvenom), Sessions, Console (PowerShell/cmd élevé), GeoMac, Projets, Rapports (PDF/HTML/Markdown), Gestionnaire d'outils, Journaux, Paramètres.
 
-## Credits & license
+---
 
-- Original project & idea: **[zalexdev/strykerapp](https://github.com/zalexdev/strykerapp)** by Anastasis Vasileiadis — *Learn. Secure. Defend.*
-- This Windows port: GPL-3.0 (same license as the original, see `LICENSE`).
-- Bundled data: IEEE OUI database (`standards-oui.ieee.org`) — free for use.
-- External tools (optional, downloaded separately): Nmap (NPSL), Nuclei (MIT), Metasploit (BSD-3), Hashcat (GPL) — keep their own licenses.
+## Compilation
 
-> **KNOWLEDGE. ETHICS. IMPACT.** Cybersecurity is not just a skill, it's a responsibility.
+```bash
+dotnet publish src/StrykerOSS/StrykerOSS.csproj -c Release -r win-x64 \
+  --self-contained true -p:PublishSingleFile=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
+```
+
+L'installeur se construit avec Inno Setup : `ISCC.exe installer/StrykerOSS.iss /DAppVersion=1.1.0`.
+
+## Licence
+
+GPL-3.0 — comme le projet d'origine. Usage éducatif uniquement.

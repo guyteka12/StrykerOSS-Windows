@@ -3,7 +3,7 @@
 x:Class must match files; module view ctors must take their VM."""
 import re, sys, os
 
-ROOT = "/home/z/work/StrykerOSS-Windows/src/StrykerOSS"
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "StrykerOSS")
 dark = open(os.path.join(ROOT, "Themes", "Dark.xaml")).read()
 global_keys = set(re.findall(r'x:Key="([\w]+)"', dark))
 implicit = {"ToolTip", "ScrollBar"}
@@ -33,7 +33,8 @@ for path in all_xaml:
             problems.append(f"{os.path.relpath(path, ROOT)}: missing code-behind {cs}")
 
 views_dir = os.path.join(ROOT, "Views")
-EXEMPT = {"MainWindow", "PlaceholderView", "ConsentWindow"}
+# SetupWindow : assistant de première configuration, reçoit IServiceProvider (pas un VM de module)
+EXEMPT = {"MainWindow", "PlaceholderView", "ConsentWindow", "SetupWindow"}
 for f in os.listdir(views_dir):
     if f.endswith(".xaml.cs"):
         name = f[:-8]

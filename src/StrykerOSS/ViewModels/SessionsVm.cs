@@ -16,7 +16,7 @@ public partial class SessionsVm : ObservableObject
     public ObservableCollection<string> Kinds { get; } = new() { "manual", "nmap", "nuclei", "msf", "terminal" };
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _newSessionName = "";
     [ObservableProperty] private string _newSessionKind = "manual";
     [ObservableProperty] private string _newSessionTarget = "";
@@ -55,12 +55,12 @@ public partial class SessionsVm : ObservableObject
                 foreach (var s in list) Sessions.Add(s);
             });
             MsfConnected = _msf.IsConnected;
-            Status = $"{list.Count} session(s) on record";
+            Status = $"{list.Count} session(s) enregistrée(s)";
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "reload failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -77,7 +77,7 @@ public partial class SessionsVm : ObservableObject
     private async Task StartSessionAsync()
     {
         if (IsBusy) return;
-        if (string.IsNullOrWhiteSpace(NewSessionName)) { Status = "Session name is required."; return; }
+        if (string.IsNullOrWhiteSpace(NewSessionName)) { Status = "Le nom de la session est requis."; return; }
         IsBusy = true;
         try
         {
@@ -87,12 +87,12 @@ public partial class SessionsVm : ObservableObject
             NewSessionName = "";
             NewSessionTarget = "";
             await LoadCoreAsync();
-            Status = $"Session #{s.Id} started.";
+            Status = $"Session #{s.Id} démarrée.";
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "start failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -106,12 +106,12 @@ public partial class SessionsVm : ObservableObject
             await _db.EndSessionAsync(s.Id);
             _log.Info("sessions", $"session #{s.Id} ended");
             await LoadCoreAsync();
-            Status = $"Session #{s.Id} ended.";
+            Status = $"Session #{s.Id} terminée.";
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "end failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -126,17 +126,17 @@ public partial class SessionsVm : ObservableObject
                 await concrete.DeleteSessionAsync(s.Id);
                 _log.Info("sessions", $"session #{s.Id} deleted");
                 await LoadCoreAsync();
-                Status = $"Session #{s.Id} deleted.";
+                Status = $"Session #{s.Id} supprimée.";
             }
             else
             {
-                Status = "Session delete is not supported by the current provider.";
+                Status = "La suppression de session n'est pas prise en charge par le fournisseur actuel.";
             }
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "delete failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -149,7 +149,7 @@ public partial class SessionsVm : ObservableObject
         IsBusy = true;
         try
         {
-            Status = "Connecting to MSF RPC...";
+            Status = "Connexion au RPC MSF...";
             var ok = await _msf.ConnectRpcAsync();
             MsfConnected = _msf.IsConnected;
             if (ok)
@@ -159,14 +159,14 @@ public partial class SessionsVm : ObservableObject
             }
             else
             {
-                Status = "MSF RPC connect failed - is msfrpcd running with the configured credentials?";
+                Status = "Échec de connexion au RPC MSF - msfrpcd est-il démarré avec les identifiants configurés ?";
                 _log.Warn("sessions", "MSF RPC connect failed");
             }
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "msf connect failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -177,7 +177,7 @@ public partial class SessionsVm : ObservableObject
         if (!_msf.IsConnected)
         {
             MsfConnected = false;
-            Status = "MSF RPC not connected.";
+            Status = "RPC MSF non connecté.";
             return;
         }
         try
@@ -187,13 +187,13 @@ public partial class SessionsVm : ObservableObject
             {
                 MsfSessions.Clear();
                 foreach (var s in list) MsfSessions.Add(s);
-                Status = $"MSF RPC: {list.Count} live session(s)";
+                Status = $"RPC MSF : {list.Count} session(s) en direct";
             });
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "msf list failed", ex);
-            await App.Current.Dispatcher.InvokeAsync(() => Status = "MSF error: " + ex.Message);
+            await App.Current.Dispatcher.InvokeAsync(() => Status = "Erreur MSF : " + ex.Message);
         }
     }
 
@@ -205,13 +205,13 @@ public partial class SessionsVm : ObservableObject
         {
             var ok = await _msf.KillSessionAsync(s.Id);
             _log.Warn("sessions", ok ? $"MSF session {s.Id} killed" : $"MSF session {s.Id} kill failed");
-            Status = ok ? $"MSF session {s.Id} killed." : $"Failed to kill MSF session {s.Id}.";
+            Status = ok ? $"Session MSF {s.Id} terminée." : $"Échec de l'arrêt de la session MSF {s.Id}.";
             await RefreshMsfAsync();
         }
         catch (Exception ex)
         {
             _log.Error("sessions", "msf kill failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
     }
 }

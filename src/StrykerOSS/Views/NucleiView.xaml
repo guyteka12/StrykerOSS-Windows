@@ -9,8 +9,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Web Scanner (Nuclei)" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real projectdiscovery nuclei: template-based vulnerability scanning of web targets."
+            <TextBlock Text="Scanner Web (Nuclei)" Style="{StaticResource H1}"/>
+            <TextBlock Text="nuclei de projectdiscovery réel : scan de vulnérabilités des cibles web par modèles."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -31,14 +31,14 @@
                 <!-- install card -->
                 <Border Grid.Row="0" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="TOOL" Style="{StaticResource Section}"/>
+                        <TextBlock Text="OUTIL" Style="{StaticResource Section}"/>
                         <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="Install / Update" Style="{StaticResource BtnPrimary}"
+                            <Button DockPanel.Dock="Right" Content="Installer / Mettre à jour" Style="{StaticResource BtnPrimary}"
                                     Command="{Binding InstallCommand}" VerticalAlignment="Center" Margin="12,0,0,0"
-                                    ToolTip="Downloads the official pinned nuclei release (windows x64) into the tools folder"/>
+                                    ToolTip="Télécharge la version officielle épinglée de nuclei (windows x64) dans le dossier des outils"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding InstallStatus}" Style="{StaticResource Body}" FontWeight="SemiBold"/>
-                                <TextBlock Text="Official projectdiscovery nuclei - pinned v3.3.9 windows x64" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="nuclei officiel de projectdiscovery - version épinglée v3.3.9 windows x64" Style="{StaticResource Caption}"/>
                             </StackPanel>
                         </DockPanel>
                     </StackPanel>
@@ -47,13 +47,13 @@
                 <!-- targets card -->
                 <Border Grid.Row="1" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="TARGETS" Style="{StaticResource Section}"/>
+                        <TextBlock Text="CIBLES" Style="{StaticResource Section}"/>
                         <TextBox Style="{StaticResource InputBox}" AcceptsReturn="True" TextWrapping="Wrap" Height="90"
                                  VerticalScrollBarVisibility="Auto"
                                  Text="{Binding TargetsText, UpdateSourceTrigger=PropertyChanged}"
-                                 ToolTip="One host or URL per line (http:// is added when the scheme is missing)"/>
+                                 ToolTip="Un hôte ou une URL par ligne (http:// est ajouté si le schéma est absent)"/>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                            <TextBlock Text="severity:" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Gravité :" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <CheckBox Content="info" IsChecked="{Binding SevInfo}" Margin="0,0,10,0"/>
                             <CheckBox Content="low" IsChecked="{Binding SevLow}" Margin="0,0,10,0"/>
                             <CheckBox Content="medium" IsChecked="{Binding SevMedium}" Margin="0,0,10,0"/>
@@ -61,12 +61,12 @@
                             <CheckBox Content="critical" IsChecked="{Binding SevCritical}" Margin="0,0,10,0"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                            <TextBlock Text="tags:" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Tags :" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBox Style="{StaticResource InputBox}" Width="300"
                                      Text="{Binding TagsText, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="Optional nuclei template tags, comma or space separated (e.g. cve,rce)"/>
-                            <Button Content="Run scan" Style="{StaticResource BtnPrimary}" Command="{Binding RunScanCommand}" Margin="10,0,0,0"/>
-                            <Button Content="Cancel" Style="{StaticResource BtnDanger}" Command="{Binding CancelScanCommand}"
+                                     ToolTip="Tags de modèles nuclei optionnels, séparés par des virgules ou des espaces (ex. cve,rce)"/>
+                            <Button Content="Lancer le scan" Style="{StaticResource BtnPrimary}" Command="{Binding RunScanCommand}" Margin="10,0,0,0"/>
+                            <Button Content="Annuler" Style="{StaticResource BtnDanger}" Command="{Binding CancelScanCommand}"
                                     Margin="8,0,0,0" IsEnabled="{Binding IsBusy}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,8,0,0"/>
@@ -77,7 +77,7 @@
                 <Border Grid.Row="2" Style="{StaticResource Card}">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top">
-                            <TextBlock Text="LIVE LOG" Style="{StaticResource Section}"/>
+                            <TextBlock Text="JOURNAL EN DIRECT" Style="{StaticResource Section}"/>
                             <ProgressBar Style="{StaticResource ProgressAccent}" IsIndeterminate="{Binding IsBusy}" Margin="0,0,0,4"/>
                         </StackPanel>
                         <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding LogLines}"
@@ -92,8 +92,8 @@
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Export CSV" Style="{StaticResource BtnGhost}" Command="{Binding ExportCsvCommand}"/>
-                            <Button Content="Open raw JSONL" Style="{StaticResource BtnGhost}" Command="{Binding OpenRawCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Exporter en CSV" Style="{StaticResource BtnGhost}" Command="{Binding ExportCsvCommand}"/>
+                            <Button Content="Ouvrir le JSONL brut" Style="{StaticResource BtnGhost}" Command="{Binding OpenRawCommand}" Margin="8,0,0,0"/>
                         </StackPanel>
                         <TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
@@ -129,7 +129,7 @@
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" FontWeight="Bold"
                                                            TextWrapping="Wrap" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding MatchedAt, StringFormat='matched: {0}'}"
+                                            <TextBlock Text="{Binding MatchedAt, StringFormat='correspondance : {0}'}"
                                                        Style="{StaticResource Caption}" Margin="0,4,0,0"/>
                                             <TextBlock Text="{Binding Description}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
                                         </StackPanel>

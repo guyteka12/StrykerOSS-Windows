@@ -10,7 +10,7 @@
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
             <TextBlock Text="Handshakes" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real WPA handshake (EAPOL) analysis from pcap captures - hashcat 22000 export."
+            <TextBlock Text="Analyse réelle de handshakes WPA (EAPOL) à partir de captures pcap - export Hashcat 22000."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -29,18 +29,18 @@
 
                 <Border Grid.Row="0" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="ANALYZE CAPTURES" Style="{StaticResource Section}"/>
+                        <TextBlock Text="ANALYSER LES CAPTURES" Style="{StaticResource Section}"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Open pcap / cap / pcapng..." Style="{StaticResource BtnPrimary}"
+                            <Button Content="Ouvrir pcap / cap / pcapng..." Style="{StaticResource BtnPrimary}"
                                     Command="{Binding AnalyzeFileCommand}"/>
                             <TextBox Style="{StaticResource InputBox}" Width="280" Margin="10,0,0,0"
-                                     ToolTip="Folder with .pcap / .cap / .pcapng files"
+                                     ToolTip="Dossier contenant des fichiers .pcap / .cap / .pcapng"
                                      Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Content="Analyze folder" Style="{StaticResource BtnPrimary}" Margin="10,0,0,0"
+                            <Button Content="Analyser le dossier" Style="{StaticResource BtnPrimary}" Margin="10,0,0,0"
                                     Command="{Binding AnalyzeFolderCommand}"/>
-                            <Button Content="Refresh" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                            <Button Content="Actualiser" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
                                     Command="{Binding LoadCommand}"/>
-                            <Button Content="Export CSV" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                            <Button Content="Exporter en CSV" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
                                     Command="{Binding ExportCsvCommand}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,10,0,0"/>
@@ -68,12 +68,12 @@
                                                                    FontWeight="SemiBold"/>
                                                         <Border Style="{StaticResource BadgeSuccess}" Margin="10,0,0,0"
                                                                 Visibility="{Binding CompleteVis}">
-                                                            <TextBlock Text="COMPLETE" FontSize="10" FontWeight="Bold"
+                                                            <TextBlock Text="COMPLET" FontSize="10" FontWeight="Bold"
                                                                        Foreground="#0B0B12"/>
                                                         </Border>
                                                         <Border Style="{StaticResource BadgeWarn}" Margin="10,0,0,0"
                                                                 Visibility="{Binding IncompleteVis}">
-                                                            <TextBlock Text="INCOMPLETE" FontSize="10" FontWeight="Bold"
+                                                            <TextBlock Text="INCOMPLET" FontSize="10" FontWeight="Bold"
                                                                        Foreground="#0B0B12"/>
                                                         </Border>
                                                         <Border Style="{StaticResource BadgeMuted}" Margin="10,0,0,0">
@@ -85,11 +85,11 @@
                                                     <TextBlock Text="{Binding ClientsLine}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
-                                                    <Button Content="Export 22000" Style="{StaticResource BtnGhost}" Padding="10,5"
+                                                    <Button Content="Exporter 22000" Style="{StaticResource BtnGhost}" Padding="10,5"
                                                             Margin="0,0,8,0"
                                                             Command="{Binding DataContext.ExportHashCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                             CommandParameter="{Binding}"/>
-                                                    <Button Content="Delete" Style="{StaticResource BtnDanger}" Padding="10,5"
+                                                    <Button Content="Supprimer" Style="{StaticResource BtnDanger}" Padding="10,5"
                                                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                             CommandParameter="{Binding}"/>
                                                 </StackPanel>
@@ -109,29 +109,29 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                             <Border Style="{StaticResource BadgeWarn}">
-                                <TextBlock Text="MONITOR MODE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                <TextBlock Text="MODE MONITEUR" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                             </Border>
                         </StackPanel>
                         <TextBlock Style="{StaticResource Caption}"
-                                   Text="The built-in Windows Wi-Fi adapter cannot capture in monitor mode. Analyze real .pcap/.cap captures from your lab - parsing and hashcat 22000 conversion are real."/>
+                                   Text="L'adaptateur Wi-Fi intégré de Windows ne peut pas capturer en mode moniteur. Analysez de vraies captures .pcap/.cap depuis votre laboratoire - l'analyse et la conversion Hashcat 22000 sont réelles."/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="WORKFLOW" Style="{StaticResource Section}"/>
+                        <TextBlock Text="PROCÉDURE" Style="{StaticResource Section}"/>
                         <TextBlock Style="{StaticResource Caption}" Margin="0,0,0,6"
-                                   Text="1. Analyze a capture: the parser extracts EAPOL M1-M4 nonces, MICs and PMKIDs from the exact captured bytes."/>
+                                   Text="1. Analysez une capture : le parseur extrait les nonces EAPOL M1-M4, les MIC et les PMKID depuis les octets exacts capturés."/>
                         <TextBlock Style="{StaticResource Caption}" Margin="0,0,0,6"
-                                   Text="2. Export 22000: converts the best AP/client pair into hashcat WPA*02 / WPA*01 lines."/>
+                                   Text="2. Export 22000 : convertit la meilleure paire AP/client en lignes Hashcat WPA*02 / WPA*01."/>
                         <TextBlock Style="{StaticResource Caption}"
-                                   Text="3. Crack offline on networks you own: hashcat -m 22000 hash.txt wordlist.txt"/>
+                                   Text="3. Craquez hors ligne sur des réseaux dont vous êtes propriétaire : hashcat -m 22000 hash.txt wordlist.txt"/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource Card}">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="LOG" Style="{StaticResource Section}"/>
+                        <TextBlock DockPanel.Dock="Top" Text="JOURNAL" Style="{StaticResource Section}"/>
                         <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding LogLines}">
                                 <ItemsControl.ItemTemplate>

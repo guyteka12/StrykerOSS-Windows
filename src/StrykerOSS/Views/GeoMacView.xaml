@@ -12,7 +12,7 @@
 
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
             <TextBlock Text="GeoMac" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real IP geolocation (ip-api.com), WiGLE CSV import and KML/CSV mapping exports."
+            <TextBlock Text="Géolocalisation IP réelle (ip-api.com), import de CSV WiGLE et exports cartographiques KML/CSV."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -28,23 +28,23 @@
                 <!-- public ip lookup -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="PUBLIC IP GEOLOCATION" Style="{StaticResource Section}"/>
+                        <TextBlock Text="GÉOLOCALISATION IP PUBLIQUE" Style="{StaticResource Section}"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="My IP" Style="{StaticResource BtnPrimary}" Command="{Binding MyIpCommand}"/>
+                            <Button Content="Mon IP" Style="{StaticResource BtnPrimary}" Command="{Binding MyIpCommand}"/>
                             <TextBox Style="{StaticResource InputBox}" Width="200" Margin="12,0,0,0"
                                      Text="{Binding LookupIp, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Content="Lookup" Style="{StaticResource BtnGhost}" Command="{Binding LookupCommand}" Margin="8,0,0,0"/>
-                            <TextBlock Text="{Binding MyIp, StringFormat='my ip: {0}'}" Style="{StaticResource Caption}"
+                            <Button Content="Localiser" Style="{StaticResource BtnGhost}" Command="{Binding LookupCommand}" Margin="8,0,0,0"/>
+                            <TextBlock Text="{Binding MyIp, StringFormat='mon IP : {0}'}" Style="{StaticResource Caption}"
                                        Margin="12,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel Margin="0,10,0,0" Visibility="{Binding HasLookup, Converter={StaticResource B2V}}">
-                            <TextBlock Text="{Binding ResQuery, StringFormat='query: {0}'}" Style="{StaticResource Caption}"/>
-                            <TextBlock Text="{Binding ResCountry, StringFormat='country: {0}'}" Style="{StaticResource Caption}"/>
-                            <TextBlock Text="{Binding ResCity, StringFormat='city: {0}'}" Style="{StaticResource Caption}"/>
-                            <TextBlock Text="{Binding ResIsp, StringFormat='isp: {0}'}" Style="{StaticResource Caption}"/>
-                            <TextBlock Text="{Binding ResOrg, StringFormat='org: {0}'}" Style="{StaticResource Caption}"/>
-                            <TextBlock Text="{Binding ResAs, StringFormat='as: {0}'}" Style="{StaticResource Caption}"/>
-                            <TextBlock Text="{Binding ResCoords, StringFormat='coords: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResQuery, StringFormat='requête : {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResCountry, StringFormat='pays : {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResCity, StringFormat='ville : {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResIsp, StringFormat='FAI : {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResOrg, StringFormat='organisation : {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResAs, StringFormat='AS : {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResCoords, StringFormat='coordonnées : {0}'}" Style="{StaticResource Caption}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
@@ -58,19 +58,19 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="GEO POINTS" Style="{StaticResource Section}" Margin="0"/>
+                            <TextBlock Text="POINTS GÉOLOCALISÉS" Style="{StaticResource Section}" Margin="0"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <TextBlock Text="Points:" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Points :" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding PointCount}" Style="{StaticResource Caption}" FontWeight="Bold"
                                            Margin="6,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Reload" Style="{StaticResource BtnGhost}" Command="{Binding ReloadCommand}"/>
-                            <Button Content="Import WiGLE CSV" Style="{StaticResource BtnPrimary}" Command="{Binding ImportWiGleCommand}" Margin="8,0,0,0"/>
-                            <Button Content="Export KML" Style="{StaticResource BtnGhost}" Command="{Binding ExportKmlCommand}" Margin="8,0,0,0"/>
-                            <Button Content="Export CSV" Style="{StaticResource BtnGhost}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
-                            <Button Content="Delete selected" Style="{StaticResource BtnDanger}" Command="{Binding DeletePointCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Recharger" Style="{StaticResource BtnGhost}" Command="{Binding ReloadCommand}"/>
+                            <Button Content="Importer un CSV WiGLE" Style="{StaticResource BtnPrimary}" Command="{Binding ImportWiGleCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Exporter en KML" Style="{StaticResource BtnGhost}" Command="{Binding ExportKmlCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Exporter en CSV" Style="{StaticResource BtnGhost}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Supprimer la sélection" Style="{StaticResource BtnDanger}" Command="{Binding DeletePointCommand}" Margin="8,0,0,0"/>
                         </StackPanel>
                         <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding Points}" Height="300"
                                  Margin="0,12,0,0" SelectedItem="{Binding SelectedPoint}"
@@ -96,7 +96,7 @@
                                                     <TextBlock Text="{Binding Lon, StringFormat=' · lon {0}'}" Style="{StaticResource Caption}"/>
                                                 </StackPanel>
                                             </StackPanel>
-                                            <Button Grid.Column="1" Content="Open map" Style="{StaticResource BtnGhost}"
+                                            <Button Grid.Column="1" Content="Ouvrir la carte" Style="{StaticResource BtnGhost}"
                                                     Command="{Binding DataContext.OpenMapCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}"/>
                                         </Grid>
@@ -114,19 +114,19 @@
 
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="EDUCATIONAL" Style="{StaticResource Section}"/>
-                        <TextBlock Text="Map real IP addresses to physical locations and geo-tag captured access points. Imports standard WiGLE wardriving CSV exports; KML opens in Google Earth."
+                        <TextBlock Text="ÉDUCATIF" Style="{StaticResource Section}"/>
+                        <TextBlock Text="Associez des adresses IP réelles à des emplacements physiques et géolocalisez les points d'accès capturés. Importe les exports CSV de wardriving WiGLE standards ; le KML s'ouvre dans Google Earth."
                                    Style="{StaticResource Caption}"/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="HOW IT WORKS" Style="{StaticResource Section}"/>
-                        <TextBlock Text="· My IP / Lookup query ip-api.com (real HTTP)." Style="{StaticResource Caption}"/>
-                        <TextBlock Text="· WiGLE CSV rows are persisted locally via the project database." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
-                        <TextBlock Text="· KML/CSV exports cover every stored point with coordinates." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
-                        <TextBlock Text="· Open map pins the point on OpenStreetMap." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                        <TextBlock Text="FONCTIONNEMENT" Style="{StaticResource Section}"/>
+                        <TextBlock Text="· Mon IP / Localiser interroge ip-api.com (HTTP réel)." Style="{StaticResource Caption}"/>
+                        <TextBlock Text="· Les lignes du CSV WiGLE sont conservées localement via la base de données du projet." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                        <TextBlock Text="· Les exports KML/CSV couvrent tous les points stockés disposant de coordonnées." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                        <TextBlock Text="· Ouvrir la carte épingle le point sur OpenStreetMap." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 

@@ -47,16 +47,16 @@ public sealed class OuiService : IOuiService
             var path = File.Exists(bundled) ? bundled : await DownloadToDataDirAsync().ConfigureAwait(false);
             if (path == null)
             {
-                _log.Warn("oui", $"OUI database unavailable: bundled file missing and download from {IeeeOuiUrl} failed.");
+                _log.Warn("oui", $"Base OUI indisponible : fichier intégré absent et échec du téléchargement depuis {IeeeOuiUrl}.");
                 return;
             }
 
             LoadCsv(path);
-            _log.Info("oui", $"OUI database loaded: {EntryCount:N0} entries from {path}");
+            _log.Info("oui", $"Base OUI chargée : {EntryCount:N0} entrées depuis {path}");
         }
         catch (Exception ex)
         {
-            _log.Error("oui", "failed to initialize OUI database", ex);
+            _log.Error("oui", "échec de l'initialisation de la base OUI", ex);
         }
         finally
         {
@@ -82,12 +82,12 @@ public sealed class OuiService : IOuiService
 
             if (File.Exists(target)) File.Delete(target);
             File.Move(tmp, target);
-            _log.Info("oui", $"downloaded IEEE OUI database ({new FileInfo(target).Length:N0} bytes) to {target}");
+            _log.Info("oui", $"base de données IEEE OUI téléchargée ({new FileInfo(target).Length:N0} octets) vers {target}");
             return target;
         }
         catch (Exception ex)
         {
-            _log.Error("oui", "download of IEEE OUI database failed", ex);
+            _log.Error("oui", "échec du téléchargement de la base IEEE OUI", ex);
             return null;
         }
     }

@@ -12,7 +12,7 @@
 
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
             <TextBlock Text="WhisperPair (BLE)" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real Bluetooth LE advertisement discovery, Fast Pair decoding and GATT enumeration."
+            <TextBlock Text="Découverte réelle d'annonces Bluetooth LE, décodage Fast Pair et énumération GATT."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -28,7 +28,7 @@
                 <!-- devices -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="DEVICES" Style="{StaticResource Section}"/>
+                        <TextBlock Text="APPAREILS" Style="{StaticResource Section}"/>
                         <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding Devices}" Height="330"
                                  SelectedItem="{Binding SelectedDevice}"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto" VirtualizingPanel.ScrollUnit="Pixel">
@@ -50,8 +50,8 @@
                                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                                 <TextBlock Text="{Binding Address}" Style="{StaticResource Caption}"/>
                                                 <TextBlock Text="{Binding Rssi, StringFormat=' · {0} dBm'}" Style="{StaticResource Caption}"/>
-                                                <TextBlock Text="{Binding ModelId, StringFormat=' · model {0}'}" Style="{StaticResource Caption}"/>
-                                                <TextBlock Text="{Binding LastSeen, StringFormat=' · seen {0}'}" Style="{StaticResource Caption}"/>
+                                                <TextBlock Text="{Binding ModelId, StringFormat=' · modèle {0}'}" Style="{StaticResource Caption}"/>
+                                                <TextBlock Text="{Binding LastSeen, StringFormat=' · vu {0}'}" Style="{StaticResource Caption}"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>
@@ -65,10 +65,10 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Text="GATT SERVICES" Style="{StaticResource Section}" Margin="0" VerticalAlignment="Center"/>
-                            <Button Content="Enumerate GATT" Style="{StaticResource BtnPrimary}"
+                            <TextBlock Text="SERVICES GATT" Style="{StaticResource Section}" Margin="0" VerticalAlignment="Center"/>
+                            <Button Content="Énumérer le GATT" Style="{StaticResource BtnPrimary}"
                                     Command="{Binding EnumerateGattCommand}" Margin="12,0,0,0"/>
-                            <TextBlock Text="select a device above, then enumerate its services/characteristics"
+                            <TextBlock Text="sélectionnez un appareil ci-dessus, puis énumérez ses services/caractéristiques"
                                        Style="{StaticResource Caption}" Margin="12,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                         <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding GattLines}" Height="250"
@@ -90,28 +90,28 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="BLUETOOTH RADIO" Style="{StaticResource Section}" Margin="0"/>
+                            <TextBlock Text="RADIO BLUETOOTH" Style="{StaticResource Section}" Margin="0"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <Border Style="{StaticResource BadgeSuccess}"
                                         Visibility="{Binding IsSupported, Converter={StaticResource B2V}}">
-                                    <TextBlock Text="BT ON" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                    <TextBlock Text="BT ACTIVÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                 </Border>
                                 <Border Style="{StaticResource BadgeDanger}"
                                         Visibility="{Binding IsUnsupported, Converter={StaticResource B2V}}">
-                                    <TextBlock Text="BT OFF" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                    <TextBlock Text="BT DÉSACTIVÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Start scan" Style="{StaticResource BtnPrimary}" Command="{Binding StartScanCommand}"/>
-                            <Button Content="Stop" Style="{StaticResource BtnGhost}" Command="{Binding StopScanCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Démarrer le scan" Style="{StaticResource BtnPrimary}" Command="{Binding StartScanCommand}"/>
+                            <Button Content="Arrêter" Style="{StaticResource BtnGhost}" Command="{Binding StopScanCommand}" Margin="8,0,0,0"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                            <TextBlock Text="Devices seen:" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="Appareils vus :" Style="{StaticResource Caption}"/>
                             <TextBlock Text="{Binding DeviceCount}" Style="{StaticResource Caption}" FontWeight="Bold" Margin="6,0,0,0"/>
                         </StackPanel>
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,4,0,0"/>
-                        <TextBlock Text="Bluetooth must be On in Windows settings. Google Fast Pair (0x00E0) payloads are decoded to real model IDs."
+                        <TextBlock Text="Le Bluetooth doit être activé dans les paramètres Windows. Les payloads Google Fast Pair (0x00E0) sont décodés vers de vrais IDs de modèle."
                                    Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
@@ -119,8 +119,8 @@
                 <!-- educational -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="EDUCATIONAL" Style="{StaticResource Section}"/>
-                        <TextBlock Text="Real Bluetooth LE discovery via Windows BLE stack. No external dongle needed."
+                        <TextBlock Text="PÉDAGOGIQUE" Style="{StaticResource Section}"/>
+                        <TextBlock Text="Découverte Bluetooth LE réelle via la pile BLE de Windows. Aucun dongle externe requis."
                                    Style="{StaticResource Caption}"/>
                     </StackPanel>
                 </Border>

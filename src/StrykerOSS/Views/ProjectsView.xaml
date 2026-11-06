@@ -9,8 +9,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Projects" Style="{StaticResource H1}"/>
-            <TextBlock Text="Engagement records, findings and notes stored in local SQLite. Backups export as real .zip archives." Style="{StaticResource Caption}"/>
+            <TextBlock Text="Projets" Style="{StaticResource H1}"/>
+            <TextBlock Text="Missions, constats et notes stockés en SQLite local. Les sauvegardes sont exportées en véritables archives .zip." Style="{StaticResource Caption}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -31,10 +31,10 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="PROJECTS" Style="{StaticResource Section}" Margin="0" VerticalAlignment="Center"/>
-                                <Button Grid.Column="1" Content="Refresh" Style="{StaticResource BtnGhost}" Command="{Binding ReloadCommand}"/>
+                                <TextBlock Text="PROJETS" Style="{StaticResource Section}" Margin="0" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="Actualiser" Style="{StaticResource BtnGhost}" Command="{Binding ReloadCommand}"/>
                             </Grid>
-                            <TextBlock Text="No projects yet - create one below."
+                            <TextBlock Text="Aucun projet pour l'instant - créez-en un ci-dessous."
                                        Margin="0,0,0,8">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource Caption}">
@@ -66,14 +66,14 @@
                                                         </Grid.ColumnDefinitions>
                                                         <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                                         <Border x:Name="bActive" Grid.Column="1" Style="{StaticResource BadgeSuccess}">
-                                                            <TextBlock Text="ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                            <TextBlock Text="ACTIF" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                         </Border>
                                                         <Border x:Name="bDone" Grid.Column="1" Style="{StaticResource BadgeInfo}" Visibility="Collapsed">
-                                                            <TextBlock Text="COMPLETED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                            <TextBlock Text="TERMINÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                         </Border>
                                                     </Grid>
                                                     <TextBlock Text="{Binding Client, StringFormat='client {0}'}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
-                                                    <TextBlock Text="{Binding Updated, StringFormat='updated {0:yyyy-MM-dd HH:mm}'}" Style="{StaticResource Caption}"/>
+                                                    <TextBlock Text="{Binding Updated, StringFormat='mis à jour {0:yyyy-MM-dd HH:mm}'}" Style="{StaticResource Caption}"/>
                                                 </StackPanel>
                                             </Button>
                                             <DataTemplate.Triggers>
@@ -92,8 +92,8 @@
                     <!-- new project -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="NEW PROJECT" Style="{StaticResource Section}"/>
-                            <TextBlock Text="Name" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                            <TextBlock Text="NOUVEAU PROJET" Style="{StaticResource Section}"/>
+                            <TextBlock Text="Nom" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
                             <TextBox Style="{StaticResource InputBox}" Text="{Binding NewProjectName, UpdateSourceTrigger=PropertyChanged}"/>
                             <TextBlock Text="Client" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
                             <TextBox Style="{StaticResource InputBox}" Text="{Binding NewProjectClient, UpdateSourceTrigger=PropertyChanged}"/>
@@ -101,18 +101,18 @@
                             <TextBox Style="{StaticResource InputBox}" AcceptsReturn="True" TextWrapping="Wrap" Height="80"
                                      VerticalScrollBarVisibility="Auto"
                                      Text="{Binding NewProjectDescription, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Content="Create project" Style="{StaticResource BtnPrimary}" Command="{Binding CreateProjectCommand}" Margin="0,12,0,0" HorizontalAlignment="Left"/>
+                            <Button Content="Créer le projet" Style="{StaticResource BtnPrimary}" Command="{Binding CreateProjectCommand}" Margin="0,12,0,0" HorizontalAlignment="Left"/>
                         </StackPanel>
                     </Border>
 
                     <!-- danger zone -->
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="DANGER ZONE" Style="{StaticResource Section}"/>
-                            <CheckBox Content="I understand: this deletes the selected project with all its findings and notes"
+                            <TextBlock Text="ZONE DANGEREUSE" Style="{StaticResource Section}"/>
+                            <CheckBox Content="Je comprends : cette action supprime le projet sélectionné avec tous ses constats et notes"
                                       Foreground="{StaticResource DimBrush}" FontSize="12"
                                       IsChecked="{Binding ConfirmDelete, Mode=TwoWay}"/>
-                            <Button Content="Delete selected project" Style="{StaticResource BtnDanger}"
+                            <Button Content="Supprimer le projet sélectionné" Style="{StaticResource BtnDanger}"
                                     Command="{Binding DeleteProjectCommand}" Margin="0,10,0,0" HorizontalAlignment="Left"/>
                         </StackPanel>
                     </Border>
@@ -122,7 +122,7 @@
             <!-- ============ RIGHT COLUMN ============ -->
             <Grid Grid.Column="1">
                 <!-- empty state: visible only when no project is selected -->
-                <TextBlock Text="Select a project on the left to manage its findings and notes.">
+                <TextBlock Text="Sélectionnez un projet à gauche pour gérer ses constats et notes.">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource Caption}">
                             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -159,19 +159,19 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding SelectedProject.Name}" Style="{StaticResource H2}" VerticalAlignment="Center"/>
-                                    <Button Grid.Column="1" Content="Export backup (.zip)" Style="{StaticResource BtnGhost}"
+                                    <Button Grid.Column="1" Content="Exporter une sauvegarde (.zip)" Style="{StaticResource BtnGhost}"
                                             Command="{Binding ExportBackupCommand}"/>
                                 </Grid>
-                                <TextBlock Text="{Binding SelectedProject.Client, StringFormat='client: {0}'}" Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding SelectedProject.Client, StringFormat='client : {0}'}" Style="{StaticResource Caption}" Margin="0,4,0,0"/>
                                 <TextBlock Text="{Binding SelectedProject.Description}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
-                                <TextBlock Text="{Binding SelectedProject.Created, StringFormat='created {0:yyyy-MM-dd HH:mm}'}" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="{Binding SelectedProject.Created, StringFormat='créé le {0:yyyy-MM-dd HH:mm}'}" Style="{StaticResource Caption}"/>
                             </StackPanel>
                         </Border>
 
                         <!-- findings -->
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Text="{Binding Findings.Count, StringFormat='FINDINGS ({0})'}" Style="{StaticResource Section}"/>
+                                <TextBlock Text="{Binding Findings.Count, StringFormat='CONSTATS ({0})'}" Style="{StaticResource Section}"/>
                                 <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto">
                                     <ItemsControl ItemsSource="{Binding Findings}">
                                         <ItemsControl.ItemTemplate>
@@ -200,7 +200,7 @@
                                                             <Border x:Name="svInfo" Style="{StaticResource BadgeMuted}" Visibility="Collapsed" Margin="0,0,8,0">
                                                                 <TextBlock Text="{Binding Severity}" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                             </Border>
-                                                            <Button Content="Delete" Style="{StaticResource BtnDanger}" Padding="10,4"
+                                                            <Button Content="Supprimer" Style="{StaticResource BtnDanger}" Padding="10,4"
                                                                     Command="{Binding DataContext.DeleteFindingCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                     CommandParameter="{Binding}"/>
                                                         </StackPanel>
@@ -226,18 +226,18 @@
                                 </ScrollViewer>
 
                                 <!-- add finding -->
-                                <TextBlock Text="ADD FINDING" Style="{StaticResource Section}" Margin="0,12,0,4"/>
+                                <TextBlock Text="AJOUTER UN CONSTAT" Style="{StaticResource Section}" Margin="0,12,0,4"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                        <TextBlock Text="Title" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Titre" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
                                         <TextBox Style="{StaticResource InputBox}" Text="{Binding NewFindingTitle, UpdateSourceTrigger=PropertyChanged}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Severity" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Sévérité" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
                                         <ComboBox Style="{StaticResource ComboDark}" Width="140" MinWidth="140"
                                                   ItemsSource="{Binding Severities}" SelectedItem="{Binding NewFindingSeverity}"/>
                                     </StackPanel>
@@ -248,15 +248,15 @@
                                          Text="{Binding NewFindingDescription, UpdateSourceTrigger=PropertyChanged}"/>
                                 <TextBlock Text="Impact" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding NewFindingImpact, UpdateSourceTrigger=PropertyChanged}"/>
-                                <TextBlock Text="Proof of concept" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
+                                <TextBlock Text="Preuve de concept" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
                                 <TextBox Style="{StaticResource InputBox}" AcceptsReturn="True" TextWrapping="Wrap" Height="80"
                                          FontFamily="Consolas" VerticalScrollBarVisibility="Auto"
                                          Text="{Binding NewFindingPoc, UpdateSourceTrigger=PropertyChanged}"/>
-                                <TextBlock Text="Remediation" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
+                                <TextBlock Text="Correctifs" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
                                 <TextBox Style="{StaticResource InputBox}" AcceptsReturn="True" TextWrapping="Wrap" Height="80"
                                          VerticalScrollBarVisibility="Auto"
                                          Text="{Binding NewFindingRemediation, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Content="Add finding" Style="{StaticResource BtnPrimary}" Command="{Binding AddFindingCommand}"
+                                <Button Content="Ajouter un constat" Style="{StaticResource BtnPrimary}" Command="{Binding AddFindingCommand}"
                                         Margin="0,12,0,0" HorizontalAlignment="Left"/>
                             </StackPanel>
                         </Border>
@@ -279,7 +279,7 @@
                                                             <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" FontWeight="SemiBold"/>
                                                             <TextBlock Text="{Binding Body}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
                                                         </StackPanel>
-                                                        <Button Grid.Column="1" Content="Delete" Style="{StaticResource BtnDanger}" Padding="10,4" VerticalAlignment="Center"
+                                                        <Button Grid.Column="1" Content="Supprimer" Style="{StaticResource BtnDanger}" Padding="10,4" VerticalAlignment="Center"
                                                                 Command="{Binding DataContext.DeleteNoteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                 CommandParameter="{Binding}"/>
                                                     </Grid>
@@ -289,14 +289,14 @@
                                     </ItemsControl>
                                 </ScrollViewer>
 
-                                <TextBlock Text="ADD NOTE" Style="{StaticResource Section}" Margin="0,12,0,4"/>
-                                <TextBlock Text="Title" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                                <TextBlock Text="AJOUTER UNE NOTE" Style="{StaticResource Section}" Margin="0,12,0,4"/>
+                                <TextBlock Text="Titre" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding NewNoteTitle, UpdateSourceTrigger=PropertyChanged}"/>
-                                <TextBlock Text="Body" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
+                                <TextBlock Text="Contenu" Style="{StaticResource Caption}" Margin="0,10,0,4"/>
                                 <TextBox Style="{StaticResource InputBox}" AcceptsReturn="True" TextWrapping="Wrap" Height="80"
                                          VerticalScrollBarVisibility="Auto"
                                          Text="{Binding NewNoteBody, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Content="Add note" Style="{StaticResource BtnPrimary}" Command="{Binding AddNoteCommand}"
+                                <Button Content="Ajouter une note" Style="{StaticResource BtnPrimary}" Command="{Binding AddNoteCommand}"
                                         Margin="0,12,0,0" HorizontalAlignment="Left"/>
                             </StackPanel>
                         </Border>

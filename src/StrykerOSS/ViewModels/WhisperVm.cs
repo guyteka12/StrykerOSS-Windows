@@ -12,7 +12,7 @@ public partial class WhisperVm : ObservableObject
     private readonly Dictionary<string, int> _rowIndex = new();
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private bool _scanning;
     [ObservableProperty] private BleRow? _selectedDevice;
     [ObservableProperty] private int _deviceCount;
@@ -30,8 +30,8 @@ public partial class WhisperVm : ObservableObject
         IsSupported = ble.IsSupported;
         IsUnsupported = !ble.IsSupported;
         Status = ble.IsSupported
-            ? "Bluetooth radio detected - start a scan to discover real BLE devices."
-            : "No Bluetooth radio On - enable Bluetooth in Windows settings.";
+            ? "Radio Bluetooth détectée - démarrez un scan pour découvrir de vrais appareils BLE."
+            : "Aucune radio Bluetooth activée - activez le Bluetooth dans les paramètres Windows.";
         _ble.Found += OnFound;
     }
 
@@ -41,22 +41,22 @@ public partial class WhisperVm : ObservableObject
         if (Scanning || IsBusy) return;
         if (!_ble.IsSupported)
         {
-            Status = "Bluetooth radio is off or unavailable - cannot scan.";
-            _log.Warn("ble", "scan requested with no radio");
+            Status = "La radio Bluetooth est désactivée ou indisponible - scan impossible.";
+            _log.Warn("ble", "scan demandé sans radio");
             return;
         }
         IsBusy = true;
         try
         {
-            Status = "Starting BLE active scan...";
+            Status = "Démarrage du scan BLE actif...";
             await _ble.StartAsync(new Progress<string>(l =>
                 App.Current.Dispatcher.Invoke(() => Status = l)));
             Scanning = true;
-            Status = "Scanning... (Fast Pair beacons are decoded)";
-            _log.Info("ble", "scan started from UI");
+            Status = "Scan en cours... (les balises Fast Pair sont décodées)";
+            _log.Info("ble", "scan démarré depuis l'UI");
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("ble", "scan start failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("ble", "Échec du démarrage du scan", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -68,9 +68,9 @@ public partial class WhisperVm : ObservableObject
         {
             await _ble.StopAsync();
             Scanning = false;
-            Status = $"Scan stopped - {Devices.Count} device(s) seen.";
+            Status = $"Scan arrêté - {Devices.Count} appareil(s) vu(s).";
         }
-        catch (Exception ex) { _log.Error("ble", "scan stop failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("ble", "Échec de l'arrêt du scan", ex); Status = "Erreur : " + ex.Message; }
     }
 
     [RelayCommand]
@@ -81,7 +81,7 @@ public partial class WhisperVm : ObservableObject
         try
         {
             var address = SelectedDevice.Address;
-            Status = $"Enumerating GATT on {address}...";
+            Status = $"Énumération GATT sur {address}...";
             App.Current.Dispatcher.Invoke(() => GattLines.Clear());
 
             var report = await _ble.EnumerateGattAsync(address,
@@ -96,10 +96,10 @@ public partial class WhisperVm : ObservableObject
                 foreach (var line in report.Replace("\r", "").Split('\n'))
                     if (line.Length > 0) GattLines.Add(line);
             });
-            Status = "GATT enumeration finished.";
+            Status = "Énumération GATT terminée.";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("ble", "GATT enumeration failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("ble", "Échec de l'énumération GATT", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -118,7 +118,7 @@ public partial class WhisperVm : ObservableObject
                 Devices.Add(row);
             }
             DeviceCount = Devices.Count;
-            if (Scanning) Status = $"Scanning... {Devices.Count} device(s) seen";
+            if (Scanning) Status = $"Scan en cours... {Devices.Count} appareil(s) vu(s)";
         });
     }
 }
@@ -126,7 +126,7 @@ public partial class WhisperVm : ObservableObject
 /// <summary>Row for the device list; provides display fallbacks and badge flags for the template.</summary>
 public sealed record BleRow(BleDevice Device)
 {
-    public string DisplayName => string.IsNullOrWhiteSpace(Device.Name) ? "(unnamed)" : Device.Name!;
+    public string DisplayName => string.IsNullOrWhiteSpace(Device.Name) ? "(sans nom)" : Device.Name!;
     public string Address => Device.Address;
     public short Rssi => Device.Rssi;
     public bool IsFastPair => Device.IsFastPair;

@@ -3,9 +3,9 @@ using System.Diagnostics;
 namespace StrykerOSS.Core.Services;
 
 /// <summary>
-/// Tools manager: real detection (path + version probe) and real installation
-/// via winget (nmap, hashcat) or the nuclei auto-installer. Metasploit gets
-/// honest manual guidance because it has no reliable winget package.
+/// Gestionnaire d'outils : détection réelle (chemin + sonde de version) et installation
+/// réelle via winget (nmap, hashcat, wireshark) ou via l'auto-installeur nuclei / le MSI
+/// officiel Metasploit. Metasploit propose aussi un mode d'emploi manuel honnête.
 /// </summary>
 public sealed class ToolsManagerService : IToolsManager
 {
@@ -24,10 +24,11 @@ public sealed class ToolsManagerService : IToolsManager
 
     private static readonly (string Key, string Name, string Hint, string VersionArg)[] Catalog =
     {
-        ("nmap",     "Nmap",                "winget install Insecure.Nmap — or https://nmap.org/download",   "--version"),
-        ("nuclei",   "Nuclei",              "Auto-download from projectdiscovery releases",                  "-version"),
-        ("msfvenom", "Metasploit Framework", "https://www.metasploit.com/download or WSL",                   "--version"),
-        ("hashcat",  "Hashcat",             "winget install hashcat.hashcat — or https://hashcat.net/hashcat/", "--version"),
+        ("nmap",      "Nmap",                 "winget install Insecure.Nmap — ou https://nmap.org/download",      "--version"),
+        ("nuclei",    "Nuclei",               "Téléchargement automatique depuis les releases projectdiscovery",  "-version"),
+        ("msfvenom",  "Metasploit Framework", "MSI officiel : https://windows.metasploit.com/metasploitframework-latest.msi", "--version"),
+        ("hashcat",   "Hashcat",              "winget install hashcat.hashcat — ou https://hashcat.net/hashcat/", "--version"),
+        ("tshark",    "Wireshark (tshark)",   "winget install Wireshark.Wireshark — ou https://www.wireshark.org/", "-v"),
     };
 
     public async Task<List<ToolStatus>> StatusAsync()
@@ -35,18 +36,18 @@ public sealed class ToolsManagerService : IToolsManager
         var list = new List<ToolStatus>();
         foreach (var (key, name, hint, versionArg) in Catalog)
         {
-            var path = _tools.ResolveTool(key);
+            var path = key == "tshark" ? FindTshark() : _tools.ResolveTool(key);
             var version = path != null ? await GetFirstLineAsync(path, versionArg) : null;
             list.Add(new ToolStatus(key, name, path, Found: path != null, Version: version, InstallHint: hint));
         }
-        _log.Info("tools", $"status: {list.Count(t => t.Found)}/{list.Count} tools found");
+        _log.Info("tools", $"état : {list.Count(t => t.Found)}/{list.Count} outil(s) trouvé(s)");
         return list;
     }
 
     public async Task<bool> InstallAsync(string key, IProgress<string>? log = null, CancellationToken ct = default)
     {
         var k = (key ?? string.Empty).Trim().ToLowerInvariant();
-        _log.Info("tools", $"install requested: {k}");
+        _log.Info("tools", $"installation demandée : {k}");
 
         switch (k)
         {
@@ -54,26 +55,27 @@ public sealed class ToolsManagerService : IToolsManager
                 return await WingetInstallAsync("Insecure.Nmap", log, ct);
 
             case "nuclei":
-                log?.Report("Nuclei: downloading latest release from projectdiscovery GitHub ...");
+                log?.Report("Nuclei : téléchargement de la dernière release depuis projectdiscovery GitHub...");
                 var nucleiPath = await _nuclei.EnsureInstalledAsync(log, ct);
                 var ok = !string.IsNullOrWhiteSpace(nucleiPath) && File.Exists(nucleiPath);
-                log?.Report(ok ? $"Nuclei ready: {nucleiPath}" : "Nuclei install failed.");
+                log?.Report(ok ? $"Nuclei prêt : {nucleiPath}" : "Échec de l'installation de Nuclei.");
                 return ok;
 
             case "hashcat":
                 return await WingetInstallAsync("hashcat.hashcat", log, ct);
 
+            case "tshark":
+                return await WingetInstallAsync("Wireshark.Wireshark", log, ct);
+
             case "msfvenom":
-                log?.Report("Metasploit Framework cannot be installed automatically on Windows.");
-                log?.Report("1) Download the Windows installer: https://www.metasploit.com/download");
-                log?.Report("2) Run it, then point Settings -> MsfPath at msfvenom.bat / msfconsole.bat.");
-                log?.Report("3) Start the RPC daemon once:  msfrpcd -P <your-password> -S -p 55553 -a 127.0.0.1");
-                log?.Report("   (add -u <user> if you want a named user; keep -S to disable SSL self-signed prompts)");
-                log?.Report("Alternative: install Kali in WSL and run msfvenom from there.");
+                log?.Report("Metasploit Framework s'installe désormais automatiquement via son MSI officiel.");
+                log?.Report("Téléchargement : https://windows.metasploit.com/metasploitframework-latest.msi");
+                log?.Report("Astuce : l'assistant « Gestionnaire d'outils -> Relancer l'assistant d'installation » fait tout automatiquement.");
+                log?.Report("Après installation, démarrez le démon RPC une fois :  msfrpcd -P <votre-mot-de-passe> -S -p 55553 -a 127.0.0.1");
                 return false;
 
             default:
-                log?.Report($"Unknown tool key '{key}'. Known keys: nmap, nuclei, hashcat, msfvenom.");
+                log?.Report($"Clé d'outil inconnue « {key} ». Clés connues : nmap, nuclei, hashcat, tshark, msfvenom.");
                 return false;
         }
     }
@@ -86,14 +88,30 @@ public sealed class ToolsManagerService : IToolsManager
 
     // ---------------------------------------------------------- helpers
 
+    private static string? FindTshark()
+    {
+        foreach (var p in new[]
+                 {
+                     @"C:\Program Files\Wireshark\tshark.exe",
+                     @"C:\Program Files (x86)\Wireshark\tshark.exe",
+                 })
+            if (File.Exists(p)) return p;
+        var path = Environment.GetEnvironmentVariable("PATH") ?? "";
+        foreach (var dir in path.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            try { var p = Path.Combine(dir, "tshark.exe"); if (File.Exists(p)) return p; } catch { }
+        }
+        return null;
+    }
+
     private async Task<bool> WingetInstallAsync(string packageId, IProgress<string>? log, CancellationToken ct)
     {
-        log?.Report($"Running: winget install --id {packageId} -e --accept-source-agreements --accept-package-agreements");
+        log?.Report($"Exécution : winget install --id {packageId} -e --accept-source-agreements --accept-package-agreements");
 
         var psi = new ProcessStartInfo
         {
             FileName = "winget.exe",
-            Arguments = $"install --id {packageId} -e --accept-source-agreements --accept-package-agreements",
+            Arguments = $"install --id {packageId} -e --silent --accept-source-agreements --accept-package-agreements",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -103,8 +121,8 @@ public sealed class ToolsManagerService : IToolsManager
         using var p = Process.Start(psi);
         if (p == null)
         {
-            log?.Report("winget.exe was not found - install 'App Installer' from the Microsoft Store first.");
-            _log.Warn("tools", $"winget missing, cannot install {packageId}");
+            log?.Report("winget.exe est introuvable — installez d'abord « Programmes d'installation d'applications » depuis le Microsoft Store, ou utilisez l'assistant d'installation (méthodes de secours intégrées).");
+            _log.Warn("tools", $"winget absent, impossible d'installer {packageId}");
             return false;
         }
 
@@ -114,7 +132,7 @@ public sealed class ToolsManagerService : IToolsManager
         p.BeginErrorReadLine();
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromMinutes(10)); // 600s hard timeout
+        timeout.CancelAfter(TimeSpan.FromMinutes(10)); // délai dur de 600 s
         try
         {
             await p.WaitForExitAsync(timeout.Token);
@@ -123,20 +141,20 @@ public sealed class ToolsManagerService : IToolsManager
         {
             try { if (!p.HasExited) p.Kill(true); } catch { }
             var cancelledByUser = ct.IsCancellationRequested;
-            log?.Report(cancelledByUser ? "Install cancelled." : "winget timed out after 600s - install aborted.");
-            _log.Warn("tools", $"winget {packageId}: {(cancelledByUser ? "cancelled" : "timeout")}");
+            log?.Report(cancelledByUser ? "Installation annulée." : "winget a dépassé les 600 s — installation abandonnée.");
+            _log.Warn("tools", $"winget {packageId} : {(cancelledByUser ? "annulé" : "délai dépassé")}");
             return false;
         }
 
         var code = p.ExitCode;
         log?.Report(code == 0
-            ? $"winget: '{packageId}' installed successfully. Restart the app or click Refresh to re-detect."
-            : $"winget exited with code {code} for '{packageId}'.");
-        _log.Info("tools", $"winget {packageId} -> exit {code}");
+            ? $"winget : « {packageId} » installé avec succès. Redémarrez l'application ou cliquez sur Actualiser pour relancer la détection."
+            : $"winget s'est terminé avec le code {code} pour « {packageId} ».");
+        _log.Info("tools", $"winget {packageId} -> code {code}");
         return code == 0;
     }
 
-    /// <summary>Runs `exe versionArg` with a 5s timeout and returns the first output line, if any.</summary>
+    /// <summary>Exécute « exe versionArg » avec un délai de 5 s et renvoie la première ligne de sortie, s'il y en a une.</summary>
     private static async Task<string?> GetFirstLineAsync(string exe, string versionArg)
     {
         try
@@ -165,7 +183,7 @@ public sealed class ToolsManagerService : IToolsManager
         }
         catch
         {
-            return null; // batch wrappers or broken binaries -> treat as unknown version
+            return null; // wrappers batch ou binaires cassés -> version inconnue
         }
     }
 }

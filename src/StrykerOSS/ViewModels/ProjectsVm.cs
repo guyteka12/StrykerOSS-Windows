@@ -16,7 +16,7 @@ public partial class ProjectsVm : ObservableObject
     public ObservableCollection<string> Severities { get; } = new() { "critical", "high", "medium", "low", "info" };
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private Project? _selectedProject;
 
     [ObservableProperty] private string _newProjectName = "";
@@ -60,12 +60,12 @@ public partial class ProjectsVm : ObservableObject
                 foreach (var p in list) Projects.Add(p);
                 SelectedProject = selId > 0 ? Projects.FirstOrDefault(x => x.Id == selId) : Projects.FirstOrDefault();
             });
-            Status = $"{list.Count} project(s) on record";
+            Status = $"{list.Count} projet(s) enregistré(s)";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "load projects failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec du chargement des projets", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -92,12 +92,12 @@ public partial class ProjectsVm : ObservableObject
                 Notes.Clear();
                 foreach (var n in notes) Notes.Add(n);
             });
-            Status = $"Project '{p.Name}': {findings.Count} finding(s), {notes.Count} note(s)";
+            Status = $"Projet « {p.Name} » : {findings.Count} constat(s), {notes.Count} note(s)";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "load project failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec du chargement du projet", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -122,7 +122,7 @@ public partial class ProjectsVm : ObservableObject
     private async Task CreateProjectAsync()
     {
         if (IsBusy) return;
-        if (string.IsNullOrWhiteSpace(NewProjectName)) { Status = "Project name is required."; return; }
+        if (string.IsNullOrWhiteSpace(NewProjectName)) { Status = "Le nom du projet est requis."; return; }
         IsBusy = true;
         try
         {
@@ -131,16 +131,16 @@ public partial class ProjectsVm : ObservableObject
             NewProjectName = "";
             NewProjectClient = "";
             NewProjectDescription = "";
-            Status = $"Created project #{p.Id}: {p.Name}";
+            Status = $"Projet #{p.Id} créé : {p.Name}";
             await LoadProjectsAsync();
             SelectedProject = Projects.FirstOrDefault(x => x.Id == p.Id);
             await LoadProjectAsync();
-            _log.Info("projects", $"created project #{p.Id}");
+            _log.Info("projects", $"projet #{p.Id} créé");
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "create failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de la création", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -150,22 +150,22 @@ public partial class ProjectsVm : ObservableObject
     {
         if (IsBusy) return;
         var proj = SelectedProject;
-        if (proj is not { Id: > 0 }) { Status = "No project selected."; return; }
-        if (!ConfirmDelete) { Status = "Tick the confirm box to enable deletion."; return; }
+        if (proj is not { Id: > 0 }) { Status = "Aucun projet sélectionné."; return; }
+        if (!ConfirmDelete) { Status = "Cochez la case de confirmation pour activer la suppression."; return; }
         IsBusy = true;
         try
         {
             await _db.DeleteProjectAsync(proj.Id);
-            _log.Warn("projects", $"project #{proj.Id} '{proj.Name}' deleted");
+            _log.Warn("projects", $"projet #{proj.Id} « {proj.Name} » supprimé");
             ConfirmDelete = false;
             SelectedProject = null;
             await LoadProjectsAsync();
-            Status = $"Project '{proj.Name}' deleted.";
+            Status = $"Projet « {proj.Name} » supprimé.";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "delete failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de la suppression", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -177,8 +177,8 @@ public partial class ProjectsVm : ObservableObject
     {
         if (IsBusy) return;
         var proj = SelectedProject;
-        if (proj is not { Id: > 0 }) { Status = "Select a project first."; return; }
-        if (string.IsNullOrWhiteSpace(NewFindingTitle)) { Status = "Finding title is required."; return; }
+        if (proj is not { Id: > 0 }) { Status = "Sélectionnez d'abord un projet."; return; }
+        if (string.IsNullOrWhiteSpace(NewFindingTitle)) { Status = "Le titre du constat est requis."; return; }
         IsBusy = true;
         try
         {
@@ -186,19 +186,19 @@ public partial class ProjectsVm : ObservableObject
             var f = await _db.AddFindingAsync(new Finding(0, proj.Id, NewFindingTitle.Trim(), sev,
                 NullIfEmpty(NewFindingDescription), NullIfEmpty(NewFindingImpact),
                 NullIfEmpty(NewFindingPoc), NullIfEmpty(NewFindingRemediation), DateTime.Now));
-            _log.Info("projects", $"finding #{f.Id} added to project {proj.Id}");
+            _log.Info("projects", $"constat #{f.Id} ajouté au projet {proj.Id}");
             NewFindingTitle = "";
             NewFindingDescription = "";
             NewFindingImpact = "";
             NewFindingPoc = "";
             NewFindingRemediation = "";
             await LoadProjectAsync();
-            Status = "Finding added.";
+            Status = "Constat ajouté.";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "add finding failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de l'ajout du constat", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -210,14 +210,14 @@ public partial class ProjectsVm : ObservableObject
         try
         {
             await _db.DeleteFindingAsync(f.Id);
-            _log.Info("projects", $"finding #{f.Id} deleted");
+            _log.Info("projects", $"constat #{f.Id} supprimé");
             await LoadProjectAsync();
-            Status = "Finding deleted.";
+            Status = "Constat supprimé.";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "delete finding failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de la suppression du constat", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -228,22 +228,22 @@ public partial class ProjectsVm : ObservableObject
     {
         if (IsBusy) return;
         var proj = SelectedProject;
-        if (proj is not { Id: > 0 }) { Status = "Select a project first."; return; }
-        if (string.IsNullOrWhiteSpace(NewNoteTitle)) { Status = "Note title is required."; return; }
+        if (proj is not { Id: > 0 }) { Status = "Sélectionnez d'abord un projet."; return; }
+        if (string.IsNullOrWhiteSpace(NewNoteTitle)) { Status = "Le titre de la note est requis."; return; }
         IsBusy = true;
         try
         {
             var n = await _db.AddNoteAsync(new NoteItem(0, proj.Id, NewNoteTitle.Trim(), NewNoteBody ?? "", DateTime.Now));
-            _log.Info("projects", $"note #{n.Id} added to project {proj.Id}");
+            _log.Info("projects", $"note #{n.Id} ajoutée au projet {proj.Id}");
             NewNoteTitle = "";
             NewNoteBody = "";
             await LoadProjectAsync();
-            Status = "Note added.";
+            Status = "Note ajoutée.";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "add note failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de l'ajout de la note", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -255,14 +255,14 @@ public partial class ProjectsVm : ObservableObject
         try
         {
             await _db.DeleteNoteAsync(n.Id);
-            _log.Info("projects", $"note #{n.Id} deleted");
+            _log.Info("projects", $"note #{n.Id} supprimée");
             await LoadProjectAsync();
-            Status = "Note deleted.";
+            Status = "Note supprimée.";
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "delete note failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de la suppression de la note", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -273,19 +273,19 @@ public partial class ProjectsVm : ObservableObject
     {
         if (IsBusy) return;
         var proj = SelectedProject;
-        if (proj is not { Id: > 0 }) { Status = "Select a project first."; return; }
+        if (proj is not { Id: > 0 }) { Status = "Sélectionnez d'abord un projet."; return; }
         IsBusy = true;
         try
         {
             var outDir = Path.Combine(_settings.EnsureDataDir(), "backups");
             var path = await _db.BackupProjectAsync(proj.Id, outDir);
-            Status = "Backup written: " + path;
-            _log.Info("projects", $"backup: {path}");
+            Status = "Sauvegarde créée : " + path;
+            _log.Info("projects", $"sauvegarde : {path}");
         }
         catch (Exception ex)
         {
-            _log.Error("projects", "backup failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("projects", "échec de la sauvegarde", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }

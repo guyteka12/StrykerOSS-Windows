@@ -11,26 +11,28 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- page header -->
+        <!-- en-tête -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Tools Manager" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real detection (path + version probe) and real installation of pentest tools on Windows."
+            <TextBlock Text="Gestionnaire d'outils" Style="{StaticResource H1}"/>
+            <TextBlock Text="Détection réelle (chemin + sonde de version) et installation réelle des outils de test d'intrusion sur Windows."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
         <Border Grid.Row="1" Style="{StaticResource Card}">
             <DockPanel>
-                <!-- toolbar -->
+                <!-- barre d'outils -->
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,4">
-                    <Button Content="Refresh" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
-                    <Button Content="Open tools folder" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                    <Button Content="Actualiser" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
+                    <Button Content="Ouvrir le dossier des outils" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                             Command="{Binding OpenToolsDirCommand}"/>
-                    <TextBlock Text="{Binding ToolsDir, StringFormat='Tools dir: {0}'}" Style="{StaticResource Caption}"
+                    <Button Content="Relancer l'assistant d'installation" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0"
+                            Command="{Binding OpenSetupWizardCommand}"/>
+                    <TextBlock Text="{Binding ToolsDir, StringFormat='Dossier des outils : {0}'}" Style="{StaticResource Caption}"
                                Margin="14,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,0,0,10"/>
 
-                <!-- tool list -->
+                <!-- liste des outils -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Tools}">
                         <ItemsControl.ItemTemplate>
@@ -43,19 +45,19 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- found -->
+                                        <!-- trouvé -->
                                         <StackPanel Grid.Column="0" Visibility="{Binding Found, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" FontWeight="SemiBold"/>
                                                 <Border Style="{StaticResource BadgeSuccess}" Margin="10,0,0,0">
-                                                    <TextBlock Text="INSTALLED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                    <TextBlock Text="INSTALLÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Text="{Binding Path}" Style="{StaticResource Caption}" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding Version, StringFormat='Version: {0}'}" Style="{StaticResource Caption}"/>
+                                            <TextBlock Text="{Binding Version, StringFormat='Version : {0}'}" Style="{StaticResource Caption}"/>
                                         </StackPanel>
 
-                                        <!-- not found -->
+                                        <!-- non trouvé -->
                                         <StackPanel Grid.Column="0">
                                             <StackPanel.Style>
                                                 <Style TargetType="StackPanel">
@@ -69,13 +71,13 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource Body}" FontWeight="SemiBold"/>
                                                 <Border Style="{StaticResource BadgeMuted}" Margin="10,0,0,0">
-                                                    <TextBlock Text="NOT FOUND" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                    <TextBlock Text="INTROUVABLE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                 </Border>
                                             </StackPanel>
                                             <TextBlock Text="{Binding InstallHint}" Style="{StaticResource Caption}" TextWrapping="Wrap"/>
                                         </StackPanel>
 
-                                        <Button Grid.Column="1" Content="Install" Style="{StaticResource BtnPrimary}"
+                                        <Button Grid.Column="1" Content="Installer" Style="{StaticResource BtnPrimary}"
                                                 VerticalAlignment="Center" Margin="12,0,0,0"
                                                 Command="{Binding DataContext.InstallCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding Key}"/>

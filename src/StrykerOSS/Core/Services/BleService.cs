@@ -33,7 +33,7 @@ public sealed class BleService : IBleService
         {
             IsSupported = false;
         }
-        _log.Info("ble", $"BLE service created, supported={IsSupported}");
+        _log.Info("ble", $"Service BLE créé, pris en charge={IsSupported}");
     }
 
     public event Action<BleDevice>? Found;
@@ -42,14 +42,14 @@ public sealed class BleService : IBleService
     {
         if (!IsSupported)
         {
-            const string msg = "Bluetooth radio is off or unavailable - enable Bluetooth in Windows settings.";
+            const string msg = "La radio Bluetooth est désactivée ou indisponible - activez le Bluetooth dans les paramètres Windows.";
             log?.Report(msg);
-            _log.Warn("ble", "scan requested but no Bluetooth radio is On");
+            _log.Warn("ble", "scan demandé mais aucune radio Bluetooth activée");
             return Task.CompletedTask;
         }
         if (_watcher != null)
         {
-            log?.Report("BLE scan already running.");
+            log?.Report("Scan BLE déjà en cours.");
             return Task.CompletedTask;
         }
 
@@ -66,13 +66,13 @@ public sealed class BleService : IBleService
         catch (Exception ex)
         {
             watcher.Received -= OnReceived;
-            _log.Error("ble", "failed to start advertisement watcher", ex);
-            log?.Report($"Failed to start BLE watcher: {ex.Message}");
+            _log.Error("ble", "Échec du démarrage du watcher d'annonces", ex);
+            log?.Report($"Échec du démarrage du watcher BLE : {ex.Message}");
             return Task.CompletedTask;
         }
         _watcher = watcher;
-        log?.Report("BLE active scan started.");
-        _log.Info("ble", "BluetoothLEAdvertisementWatcher started (Active)");
+        log?.Report("Scan BLE actif démarré.");
+        _log.Info("ble", "BluetoothLEAdvertisementWatcher démarré (actif)");
         return Task.CompletedTask;
     }
 
@@ -86,10 +86,10 @@ public sealed class BleService : IBleService
         }
         catch (Exception ex)
         {
-            _log.Warn("ble", $"watcher stop error: {ex.Message}");
+            _log.Warn("ble", $"erreur à l'arrêt du watcher : {ex.Message}");
         }
         _watcher = null;
-        _log.Info("ble", "BluetoothLEAdvertisementWatcher stopped");
+        _log.Info("ble", "BluetoothLEAdvertisementWatcher arrêté");
         return Task.CompletedTask;
     }
 
@@ -101,11 +101,11 @@ public sealed class BleService : IBleService
         try
         {
             ulong addr = Convert.ToUInt64(address.Replace(":", ""), 16);
-            log?.Report($"Connecting to {address} ...");
+            log?.Report($"Connexion à {address} ...");
             var dev = await BluetoothLEDevice.FromBluetoothAddressAsync(addr);
             if (dev == null)
             {
-                string err = $"ERROR: cannot connect to {address} (device not present or not connectable).";
+                string err = $"ERREUR : connexion impossible à {address} (appareil absent ou non connectable).";
                 log?.Report(err);
                 return err;
             }
@@ -113,11 +113,11 @@ public sealed class BleService : IBleService
             var sb = new StringBuilder();
             using (dev)
             {
-                sb.AppendLine($"Device: {(string.IsNullOrWhiteSpace(dev.Name) ? "(unnamed)" : dev.Name)} ({address})");
+                sb.AppendLine($"Appareil : {(string.IsNullOrWhiteSpace(dev.Name) ? "(sans nom)" : dev.Name)} ({address})");
                 var services = await dev.GetGattServicesAsync(BluetoothCacheMode.Uncached);
                 if (services.Status != GattCommunicationStatus.Success)
-                    sb.AppendLine($"Services query status: {services.Status}");
-                sb.AppendLine($"Services: {services.Services.Count}");
+                    sb.AppendLine($"Statut de la requête de services : {services.Status}");
+                sb.AppendLine($"Services : {services.Services.Count}");
                 foreach (var service in services.Services)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -126,36 +126,36 @@ public sealed class BleService : IBleService
                         sb.AppendLine($"  Service {service.Uuid}");
                         var chars = await service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
                         if (chars.Status != GattCommunicationStatus.Success)
-                            sb.AppendLine($"    characteristics status: {chars.Status}");
+                            sb.AppendLine($"    statut des caractéristiques : {chars.Status}");
                         foreach (var c in chars.Characteristics)
                         {
                             ct.ThrowIfCancellationRequested();
-                            sb.AppendLine($"    Char {c.Uuid} [{DescribeProperties(c.CharacteristicProperties)}]");
+                            sb.AppendLine($"    Caractéristique {c.Uuid} [{DescribeProperties(c.CharacteristicProperties)}]");
                         }
                     }
                     catch (OperationCanceledException) { throw; }
                     catch (Exception ex)
                     {
-                        sb.AppendLine($"    (service enumeration error: {ex.Message})");
+                        sb.AppendLine($"    (erreur d'énumération du service : {ex.Message})");
                     }
                 }
             }
 
             string report = sb.ToString();
-            log?.Report("GATT enumeration complete.");
-            _log.Info("ble", $"GATT enumerated {address}");
+            log?.Report("Énumération GATT terminée.");
+            _log.Info("ble", $"GATT énuméré {address}");
             return report;
         }
         catch (OperationCanceledException)
         {
-            log?.Report("GATT enumeration cancelled.");
+            log?.Report("Énumération GATT annulée.");
             throw;
         }
         catch (Exception ex)
         {
-            string err = $"ERROR: GATT enumeration failed: {ex.Message}";
+            string err = $"ERREUR : échec de l'énumération GATT : {ex.Message}";
             log?.Report(err);
-            _log.Error("ble", "GATT enumeration failed", ex);
+            _log.Error("ble", "Échec de l'énumération GATT", ex);
             return err;
         }
     }
@@ -211,7 +211,7 @@ public sealed class BleService : IBleService
         }
         catch (Exception ex)
         {
-            _log.Warn("ble", $"advertisement parse error: {ex.Message}");
+            _log.Warn("ble", $"erreur d'analyse d'annonce : {ex.Message}");
         }
     }
 

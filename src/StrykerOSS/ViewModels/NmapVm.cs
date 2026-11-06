@@ -29,7 +29,7 @@ public partial class NmapVm : ObservableObject
     [ObservableProperty] private NmapProfile? _selectedProfile;
     [ObservableProperty] private string _customArgs = "-sV -T3";
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _summary = "";
     [ObservableProperty] private string _lastXmlPath = "";
     [ObservableProperty] private string _profileDescription = "";
@@ -62,13 +62,13 @@ public partial class NmapVm : ObservableObject
         if (IsBusy) return;
         if (string.IsNullOrWhiteSpace(Target))
         {
-            Status = "Enter a target (IP, range, CIDR or hostname)";
+            Status = "Saisissez une cible (IP, plage, CIDR ou nom d'hôte)";
             return;
         }
         if (_nmap.FindNmap() == null)
         {
-            Status = "Nmap not found. Install from https://nmap.org or Tools Manager.";
-            Line("nmap.exe not found - install it from https://nmap.org or use Tools Manager.");
+            Status = "Nmap introuvable. Installez-le depuis https://nmap.org ou via le gestionnaire d'outils.";
+            Line("nmap.exe introuvable - installez-le depuis https://nmap.org ou utilisez le gestionnaire d'outils.");
             return;
         }
 
@@ -95,24 +95,24 @@ public partial class NmapVm : ObservableObject
                 LastXmlPath = run.RawXmlPath ?? "";
                 HasXml = File.Exists(LastXmlPath);
                 foreach (var h in run.Hosts) Hosts.Add(new NmapHostRow(h));
-                Summary = $"{up} host(s) up / {run.Hosts.Count} scanned in {sw.Elapsed.TotalSeconds:0.0}s";
+                Summary = $"{up} hôte(s) actif(s) / {run.Hosts.Count} scanné(s) en {sw.Elapsed.TotalSeconds:0.0} s";
                 HasResults = run.Hosts.Count > 0;
-                Status = "Done";
+                Status = "Terminé";
             });
 
             await _db.AddScanAsync(new ScanRecord(0, null, "nmap", targetTrimmed, started,
-                (int)sw.Elapsed.TotalMilliseconds, $"{up} hosts up ({profileName ?? "custom"})", run.RawXmlPath));
-            _log.Info("nmap", $"scan done: {targetTrimmed} - {up} hosts up");
+                (int)sw.Elapsed.TotalMilliseconds, $"{up} hôtes actifs ({profileName ?? "personnalisé"})", run.RawXmlPath));
+            _log.Info("nmap", $"scan terminé : {targetTrimmed} - {up} hôtes actifs");
         }
         catch (OperationCanceledException)
         {
-            Ui(() => Status = "Cancelled");
-            _log.Warn("nmap", "scan cancelled");
+            Ui(() => Status = "Annulé");
+            _log.Warn("nmap", "scan annulé");
         }
         catch (Exception ex)
         {
-            _log.Error("nmap", "scan failed", ex);
-            Ui(() => Status = "Error: " + ex.Message);
+            _log.Error("nmap", "échec du scan", ex);
+            Ui(() => Status = "Erreur : " + ex.Message);
         }
         finally
         {
@@ -126,14 +126,14 @@ public partial class NmapVm : ObservableObject
         var run = _lastRun;
         if (run == null)
         {
-            Status = "No results to export - run a scan first";
+            Status = "Aucun résultat à exporter - lancez d'abord un scan";
             return;
         }
 
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Export nmap report as HTML",
-            Filter = "HTML report (*.html)|*.html|All files (*.*)|*.*",
+            Title = "Exporter le rapport nmap en HTML",
+            Filter = "Rapport HTML (*.html)|*.html|Tous les fichiers (*.*)|*.*",
             FileName = $"nmap_report_{DateTime.Now:yyyyMMdd_HHmmss}.html",
             InitialDirectory = _settings.EnsureDataDir(),
         };
@@ -148,17 +148,17 @@ public partial class NmapVm : ObservableObject
             if (!string.Equals(Path.GetFullPath(built), Path.GetFullPath(dlg.FileName), StringComparison.OrdinalIgnoreCase))
                 File.Move(built, dlg.FileName, overwrite: true);
 
-            await _db.AddReportAsync(new ReportRecord(0, null, $"Nmap scan - {run.Target}", "HTML",
+            await _db.AddReportAsync(new ReportRecord(0, null, $"Scan Nmap - {run.Target}", "HTML",
                 dlg.FileName, DateTime.Now, _settings.Value.DefaultAuthor));
 
-            Line($"HTML report saved: {dlg.FileName}");
-            Status = "Report exported";
-            _log.Info("nmap", $"report exported: {dlg.FileName}");
+            Line($"Rapport HTML enregistré : {dlg.FileName}");
+            Status = "Rapport exporté";
+            _log.Info("nmap", $"rapport exporté : {dlg.FileName}");
         }
         catch (Exception ex)
         {
-            _log.Error("nmap", "export failed", ex);
-            Status = "Export failed: " + ex.Message;
+            _log.Error("nmap", "échec de l'export", ex);
+            Status = "Échec de l'export : " + ex.Message;
         }
     }
 
@@ -167,7 +167,7 @@ public partial class NmapVm : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(LastXmlPath) || !File.Exists(LastXmlPath))
         {
-            Status = "No raw XML available for this run";
+            Status = "Aucun XML brut disponible pour cette exécution";
             return;
         }
         try
@@ -176,8 +176,8 @@ public partial class NmapVm : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Error("nmap", "opening raw XML failed", ex);
-            Status = "Could not open: " + ex.Message;
+            _log.Error("nmap", "échec de l'ouverture du XML brut", ex);
+            Status = "Impossible d'ouvrir : " + ex.Message;
         }
     }
 
@@ -229,8 +229,8 @@ public sealed class NmapHostRow
     public string MacLabel => Mac == null ? "" : string.IsNullOrWhiteSpace(MacVendor) ? Mac : $"{Mac} - {MacVendor}";
     public string OsLabel => OsGuess ?? "";
     public string PortSummary => Ports.Count == 0
-        ? "no ports reported"
-        : $"{Ports.Count(p => p.State == "open")} open / {Ports.Count} ports reported";
+        ? "aucun port signalé"
+        : $"{Ports.Count(p => p.State == "open")} ouvert(s) / {Ports.Count} ports signalés";
     public bool HasMac => MacLabel.Length > 0;
     public bool HasOs => OsLabel.Length > 0;
 }

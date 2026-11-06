@@ -14,7 +14,7 @@
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
             <TextBlock Text="Console" Style="{StaticResource H1}"/>
-            <TextBlock Text="Real elevated interactive shell (powershell / cmd / wsl) with redirected stdin/stdout."
+            <TextBlock Text="Vrai shell interactif élevé (powershell / cmd / wsl) avec stdin/stdout redirigés."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -32,14 +32,14 @@
                         <TextBlock Text="SHELL" Style="{StaticResource Section}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox Style="{StaticResource ComboDark}" Width="150" VerticalAlignment="Center"
                                   ItemsSource="{Binding Shells}" SelectedItem="{Binding SelectedShell}"/>
-                        <Button Content="Start" Style="{StaticResource BtnPrimary}" Margin="10,0,0,0"
+                        <Button Content="Démarrer" Style="{StaticResource BtnPrimary}" Margin="10,0,0,0"
                                 Command="{Binding StartCommand}"/>
-                        <Button Content="Stop" Style="{StaticResource BtnDanger}" Margin="8,0,0,0"
+                        <Button Content="Arrêter" Style="{StaticResource BtnDanger}" Margin="8,0,0,0"
                                 Command="{Binding StopCommand}"/>
 
                         <Border Style="{StaticResource BadgeSuccess}" Margin="14,0,0,0"
                                 Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="{Binding Pid, StringFormat='RUNNING · PID {0}', TargetNullValue=RUNNING}"
+                            <TextBlock Text="{Binding Pid, StringFormat='EN COURS · PID {0}', TargetNullValue='EN COURS'}"
                                        FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                         </Border>
                         <Border Margin="14,0,0,0">
@@ -52,7 +52,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-                            <TextBlock Text="STOPPED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                            <TextBlock Text="ARRÊTÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                         </Border>
 
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="12,0,0,0"
@@ -63,7 +63,7 @@
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
                         <TextBox Style="{StaticResource InputBox}" Width="520"
                                  Text="{Binding Command, UpdateSourceTrigger=PropertyChanged}"/>
-                        <Button Content="Send" Style="{StaticResource BtnPrimary}" Margin="10,0,0,0"
+                        <Button Content="Envoyer" Style="{StaticResource BtnPrimary}" Margin="10,0,0,0"
                                 IsDefault="True" Command="{Binding SendCommand}"/>
                     </StackPanel>
 
@@ -80,8 +80,8 @@
             <StackPanel Grid.Column="1">
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="NOTE" Style="{StaticResource Section}"/>
-                        <TextBlock Text="Real elevated shell (this app runs as Administrator). Educational use only."
+                        <TextBlock Text="REMARQUE" Style="{StaticResource Section}"/>
+                        <TextBlock Text="Vrai shell élevé (cette application s'exécute en tant qu'Administrateur). Usage éducatif uniquement."
                                    Style="{StaticResource Body}"/>
                     </StackPanel>
                 </Border>
@@ -89,12 +89,12 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="SHELLS" Style="{StaticResource Section}"/>
-                        <TextBlock Text="powershell — Windows PowerShell 5.1, interactive via stdin (Bypass execution policy)."
+                        <TextBlock Text="powershell — Windows PowerShell 5.1, interactif via stdin (stratégie d'exécution Bypass)."
                                    Style="{StaticResource Caption}" Margin="0,0,0,6"/>
-                        <TextBlock Text="cmd — cmd.exe /Q /K, classic batch shell." Style="{StaticResource Caption}" Margin="0,0,0,6"/>
-                        <TextBlock Text="wsl — default WSL distro shell; requires WSL installed (wsl --install)."
+                        <TextBlock Text="cmd — cmd.exe /Q /K, shell batch classique." Style="{StaticResource Caption}" Margin="0,0,0,6"/>
+                        <TextBlock Text="wsl — shell de la distribution WSL par défaut ; nécessite WSL installé (wsl --install)."
                                    Style="{StaticResource Caption}" Margin="0,0,0,6"/>
-                        <TextBlock Text="Output is capped at 2000 lines; commands starting with > are yours."
+                        <TextBlock Text="La sortie est limitée à 2000 lignes ; les commandes commençant par &gt; sont les vôtres."
                                    Style="{StaticResource Caption}"/>
                     </StackPanel>
                 </Border>

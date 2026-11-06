@@ -1,7 +1,7 @@
 <Window x:Class="StrykerOSS.Views.ConsentWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="StrykerOSS - Authorized testing agreement"
+        Title="StrykerOSS — Accord de test autorisé"
         Width="620" Height="520" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}">
     <Grid Margin="24">
@@ -17,31 +17,31 @@
                     <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" Foreground="White"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <TextBlock Text="Before you continue" Style="{StaticResource H2}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Text="Avant de continuer" Style="{StaticResource H2}" Margin="12,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
             <TextBlock Style="{StaticResource Caption}" Margin="0,10,0,0"
-                       Text="StrykerOSS is a free and open-source security testing suite, provided for EDUCATIONAL purposes only."/>
+                       Text="StrykerOSS est une suite libre et open source de tests de sécurité, fournie à des fins ÉDUCATIVES uniquement."/>
         </StackPanel>
 
         <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,14,0,14">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Style="{StaticResource Body}" Text="Ethics first. Everything you do with this tool is your responsibility."/>
+                    <TextBlock Style="{StaticResource Body}" Text="L'éthique d'abord. Tout ce que vous faites avec cet outil relève de votre responsabilité."/>
                     <TextBlock Style="{StaticResource Caption}" Margin="0,10,0,0"
-                               Text="&#8226; Only scan, test or audit systems you own or have explicit written permission to test.&#10;&#8226; Unauthorized access to computer systems is illegal in most jurisdictions.&#10;&#8226; This software is distributed in the hope that it will be useful for learning security, with ABSOLUTELY NO WARRANTY.&#10;&#8226; The authors and contributors are not responsible for any misuse or damage caused by this program.&#10;&#8226; Always get permission. Respect systems and data. Stay ethical."/>
-                    <TextBlock Style="{StaticResource Section}" Margin="0,16,0,4" Text="LICENSE"/>
+                               Text="&#8226; Scannez, testez ou auditez uniquement des systèmes qui vous appartiennent ou pour lesquels vous disposez d'une autorisation écrite explicite.&#10;&#8226; L'accès non autorisé à des systèmes informatiques est illégal dans la plupart des juridictions.&#10;&#8226; Ce logiciel est distribué dans l'espoir qu'il sera utile pour apprendre la sécurité, sans AUCUNE GARANTIE.&#10;&#8226; Les auteurs et contributeurs ne sauraient être tenus responsables d'un usage abusif ou de dommages causés par ce programme.&#10;&#8226; Obtenez toujours une autorisation. Respectez les systèmes et les données. Restez éthique."/>
+                    <TextBlock Style="{StaticResource Section}" Margin="0,16,0,4" Text="LICENCE"/>
                     <TextBlock Style="{StaticResource Caption}"
-                               Text="This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License v3.0. Windows port inspired by zalexdev/strykerapp (GPL-3.0)."/>
+                               Text="Ce programme est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon les termes de la GNU General Public License v3.0. Portage Windows inspiré de zalexdev/strykerapp (GPL-3.0)."/>
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
         <StackPanel Grid.Row="2">
             <CheckBox x:Name="ChkAgree" Foreground="{StaticResource TextBrush}" FontSize="13"
-                      Content="I will only test systems I own or have explicit permission to test."/>
+                      Content="Je testerai uniquement des systèmes qui m'appartiennent ou pour lesquels j'ai une autorisation explicite."/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
-                <Button Content="Exit" Style="{StaticResource BtnGhost}" Click="OnExit" Margin="0,0,10,0"/>
-                <Button x:Name="BtnAccept" Content="Accept and continue" Style="{StaticResource BtnPrimary}"
+                <Button Content="Quitter" Style="{StaticResource BtnGhost}" Click="OnExit" Margin="0,0,10,0"/>
+                <Button x:Name="BtnAccept" Content="Accepter et continuer" Style="{StaticResource BtnPrimary}"
                         IsEnabled="False" Click="OnAccept"/>
             </StackPanel>
         </StackPanel>

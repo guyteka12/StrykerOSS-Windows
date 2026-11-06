@@ -11,7 +11,7 @@ public partial class MacChangerVm : ObservableObject
     private readonly ILogger _log;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private MacChangerAdapter? _selectedAdapter;
     [ObservableProperty] private string _macText = "";
     [ObservableProperty] private string _applyConfirm = "";
@@ -41,7 +41,7 @@ public partial class MacChangerVm : ObservableObject
     partial void OnSelectedAdapterChanged(MacChangerAdapter? value)
     {
         CurrentMac = string.IsNullOrWhiteSpace(value?.CurrentMac) ? "-" : value.CurrentMac;
-        ConfiguredMac = string.IsNullOrWhiteSpace(value?.PermanentMac) ? "unknown" : value.PermanentMac;
+        ConfiguredMac = string.IsNullOrWhiteSpace(value?.PermanentMac) ? "inconnue" : value.PermanentMac;
         HasOverride = !string.IsNullOrWhiteSpace(value?.CurrentMac)
                       && !string.IsNullOrWhiteSpace(value?.PermanentMac)
                       && !string.Equals(value.CurrentMac, value.PermanentMac, StringComparison.OrdinalIgnoreCase);
@@ -104,7 +104,7 @@ public partial class MacChangerVm : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Status = "Enumerating adapters and profiles...";
+        Status = "Énumération des adaptateurs et des profils...";
         try
         {
             var adapters = await _mac.ListAdaptersAsync();
@@ -118,13 +118,13 @@ public partial class MacChangerVm : ObservableObject
                 Profiles.Clear();
                 foreach (var p in profiles) Profiles.Add(p);
             });
-            Status = $"Ready - {Adapters.Count} adapter(s), {Profiles.Count} profile(s)";
-            _log.Info("macchanger", $"listed {Adapters.Count} adapter(s), {Profiles.Count} profile(s)");
+            Status = $"Prêt - {Adapters.Count} adaptateur(s), {Profiles.Count} profil(s)";
+            _log.Info("macchanger", $"listé {Adapters.Count} adaptateur(s), {Profiles.Count} profil(s)");
         }
         catch (Exception ex)
         {
-            _log.Error("macchanger", "loading adapters failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("macchanger", "Échec du chargement des adaptateurs", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -136,26 +136,26 @@ public partial class MacChangerVm : ObservableObject
         var adapter = SelectedAdapter;
         string mac = NormalizeMac(MacText);
         IsBusy = true;
-        Status = $"Applying MAC {FormatMac(mac)} on '{adapter.Description}'...";
+        Status = $"Application de la MAC {FormatMac(mac)} sur '{adapter.Description}'...";
         try
         {
             var progress = new Progress<string>(s => App.Current.Dispatcher.Invoke(() => AddLog(s)));
             bool ok = await _mac.SetMacAsync(adapter.InterfaceGuid, mac, progress);
             await ReloadAdaptersAsync();
             Status = ok
-                ? $"MAC applied: {FormatMac(mac)} (adapter restarted)."
-                : "Registry updated, but the change was not confirmed in time - see the log.";
-            _log.Info("macchanger", $"set {FormatMac(mac)} on {adapter.InterfaceGuid}: {ok}");
+                ? $"MAC appliquée : {FormatMac(mac)} (adaptateur redémarré)."
+                : "Registre mis à jour, mais le changement n'a pas été confirmé à temps - voir le journal.";
+            _log.Info("macchanger", $"set {FormatMac(mac)} sur {adapter.InterfaceGuid} : {ok}");
         }
         catch (OperationCanceledException)
         {
-            Status = "Cancelled";
-            _log.Warn("macchanger", "apply cancelled");
+            Status = "Annulé";
+            _log.Warn("macchanger", "application annulée");
         }
         catch (Exception ex)
         {
-            _log.Error("macchanger", "applying MAC failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("macchanger", "Échec de l'application de la MAC", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -166,19 +166,19 @@ public partial class MacChangerVm : ObservableObject
         if (IsBusy || SelectedAdapter is null) return;
         var adapter = SelectedAdapter;
         IsBusy = true;
-        Status = $"Restoring permanent MAC on '{adapter.Description}'...";
+        Status = $"Restauration de la MAC permanente sur '{adapter.Description}'...";
         try
         {
             var progress = new Progress<string>(s => App.Current.Dispatcher.Invoke(() => AddLog(s)));
             await _mac.RestorePermanentAsync(adapter.InterfaceGuid, progress);
             await ReloadAdaptersAsync();
-            Status = "Permanent MAC restored (override removed).";
-            _log.Info("macchanger", $"restored permanent MAC on {adapter.InterfaceGuid}");
+            Status = "MAC permanente restaurée (surcharge supprimée).";
+            _log.Info("macchanger", $"MAC permanente restaurée sur {adapter.InterfaceGuid}");
         }
         catch (Exception ex)
         {
-            _log.Error("macchanger", "restoring permanent MAC failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("macchanger", "Échec de la restauration de la MAC permanente", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -187,7 +187,7 @@ public partial class MacChangerVm : ObservableObject
     private void RandomMac()
     {
         MacText = _mac.RandomMac();
-        Status = "Random locally-administered MAC generated - type APPLY to confirm.";
+        Status = "MAC aléatoire localement administrée générée - saisissez APPLY pour confirmer.";
     }
 
     [RelayCommand(CanExecute = nameof(CanSaveProfile))]
@@ -200,13 +200,13 @@ public partial class MacChangerVm : ObservableObject
             await _mac.SaveProfileAsync(ProfileName.Trim(), adapter.InterfaceGuid, NormalizeMac(MacText));
             ProfileName = "";
             await ReloadProfilesAsync();
-            Status = "MAC profile saved.";
-            _log.Info("macchanger", "profile saved");
+            Status = "Profil MAC enregistré.";
+            _log.Info("macchanger", "profil enregistré");
         }
         catch (Exception ex)
         {
-            _log.Error("macchanger", "saving profile failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("macchanger", "Échec de l'enregistrement du profil", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -216,7 +216,7 @@ public partial class MacChangerVm : ObservableObject
         if (SelectedProfile is null) return;
         MacText = FormatMac(SelectedProfile.Mac);
         ApplyConfirm = "";
-        Status = $"Profile '{SelectedProfile.Name}' loaded - type APPLY to confirm.";
+        Status = $"Profil '{SelectedProfile.Name}' chargé - saisissez APPLY pour confirmer.";
     }
 
     [RelayCommand(CanExecute = nameof(CanUseSelectedProfile))]
@@ -228,13 +228,13 @@ public partial class MacChangerVm : ObservableObject
         {
             await _mac.DeleteProfileAsync(profile.Id);
             App.Current.Dispatcher.Invoke(() => Profiles.Remove(profile));
-            Status = $"Profile '{profile.Name}' deleted.";
-            _log.Info("macchanger", $"profile '{profile.Name}' deleted");
+            Status = $"Profil '{profile.Name}' supprimé.";
+            _log.Info("macchanger", $"profil '{profile.Name}' supprimé");
         }
         catch (Exception ex)
         {
-            _log.Error("macchanger", "deleting profile failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("macchanger", "Échec de la suppression du profil", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 

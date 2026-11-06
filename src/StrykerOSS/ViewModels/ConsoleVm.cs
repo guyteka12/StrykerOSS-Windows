@@ -23,7 +23,7 @@ public partial class ConsoleVm : ObservableObject
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private int? _pid;
-    [ObservableProperty] private string _status = "Stopped";
+    [ObservableProperty] private string _status = "Arrêté";
 
     public ConsoleVm(ITerminalService terminal, ILogger log)
     {
@@ -42,7 +42,7 @@ public partial class ConsoleVm : ObservableObject
         try
         {
             var shell = SelectedShell;
-            AddLine($"Starting real {shell} process (elevated) ...");
+            AddLine($"Démarrage du vrai processus {shell} (élevé) ...");
             var progress = new Progress<string>(AddLine);
             var session = await _terminal.StartAsync(shell, null, progress, ct);
 
@@ -56,19 +56,19 @@ public partial class ConsoleVm : ObservableObject
             _session = session;
             IsRunning = true;
             Pid = session.Pid;
-            Status = $"Running - {shell} pid {Pid}";
+            Status = $"En cours - {shell} pid {Pid}";
             _log.Info("console", $"{shell} terminal session started (pid {Pid})");
         }
         catch (OperationCanceledException)
         {
-            Status = "Cancelled";
-            AddLine("[start cancelled]");
+            Status = "Annulé";
+            AddLine("[démarrage annulé]");
         }
         catch (Exception ex)
         {
             _log.Error("console", "terminal start failed", ex);
-            Status = "Error: " + ex.Message;
-            AddLine($"[start failed: {ex.Message}]");
+            Status = "Erreur : " + ex.Message;
+            AddLine($"[échec du démarrage : {ex.Message}]");
         }
         finally
         {
@@ -95,11 +95,11 @@ public partial class ConsoleVm : ObservableObject
         _session = null;
         IsRunning = false;
         Pid = null;
-        Status = "Stopped";
+        Status = "Arrêté";
         try
         {
             await s.DisposeAsync(); // real Kill(entireProcessTree)
-            AddLine("[session stopped - process tree killed]");
+            AddLine("[session arrêtée - arbre de processus tué]");
             _log.Info("console", "terminal session stopped");
         }
         catch (Exception ex)
@@ -119,7 +119,7 @@ public partial class ConsoleVm : ObservableObject
         if (!ReferenceEquals(_session, session)) return; // stale exit from an already-stopped session
         IsRunning = false;
         Pid = null;
-        Status = "Stopped";
+        Status = "Arrêté";
         _log.Info("console", "terminal session exited on its own");
     }
 

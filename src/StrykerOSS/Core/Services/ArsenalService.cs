@@ -32,13 +32,13 @@ public sealed class ArsenalService : IArsenalService
     {
         // SaveTemplateAsync is an upsert: Id == 0 inserts, Id > 0 updates; returns the real row id.
         var id = await _db.SaveTemplateAsync(t);
-        _log.Info("arsenal", $"template saved #{id} '{t.Name}' ({t.Category})");
+        _log.Info("arsenal", $"modèle enregistré #{id} '{t.Name}' ({t.Category})");
         return id;
     }
 
     public Task DeleteAsync(int id)
     {
-        _log.Info("arsenal", $"template deleted #{id}");
+        _log.Info("arsenal", $"modèle supprimé #{id}");
         return _db.DeleteTemplateAsync(id);
     }
 
@@ -51,17 +51,18 @@ public sealed class ArsenalService : IArsenalService
         {
             await _db.SaveTemplateAsync(new ArsenalTemplate(0, t.Name, t.Category, t.Command, t.Description));
         }
-        _log.Info("arsenal", $"seeded {BuiltInTemplates().Count} built-in templates");
+        _log.Info("arsenal", $"{BuiltInTemplates().Count} modèles intégrés initialisés");
     }
 
     private static List<(string Name, string Category, string Command, string Description)> BuiltInTemplates() => new()
     {
-        ("Quick Nmap",        "recon", "nmap -T4 -F {IP}",                                     "Fast TCP scan of common ports"),
-        ("Service detection", "recon", "nmap -sV {IP}",                                        "Detect service versions"),
-        ("Full TCP sweep",    "recon", "nmap -sT -p- -T4 {IP}",                                "All 65535 TCP ports"),
-        ("Nuclei scan",       "web",   "nuclei -u {TARGET_URL}",                               "Template-based vulnerability scan"),
-        ("ARP table (local)", "local", "arp -a",                                               "Show local ARP cache"),
-        ("TCP check",         "recon", "powershell -NoProfile -Command \"Test-NetConnection {IP} -Port {PORT}\"", "Single port connectivity test"),
+        // Noms/catégories/descriptions affichés à l'utilisateur (traduits) - les commandes restent intactes.
+        ("Nmap rapide",            "reconnaissance", "nmap -T4 -F {IP}",                                     "Scan TCP rapide des ports courants"),
+        ("Détection de services",  "reconnaissance", "nmap -sV {IP}",                                        "Détecte les versions des services"),
+        ("Balayage TCP complet",   "reconnaissance", "nmap -sT -p- -T4 {IP}",                                "Les 65535 ports TCP"),
+        ("Scan Nuclei",            "web",            "nuclei -u {TARGET_URL}",                               "Scan de vulnérabilités par modèles"),
+        ("Table ARP (locale)",     "local",          "arp -a",                                               "Affiche le cache ARP local"),
+        ("Test TCP",               "reconnaissance", "powershell -NoProfile -Command \"Test-NetConnection {IP} -Port {PORT}\"", "Test de connectivité d'un seul port"),
     };
 
     // ---------------- rendering ----------------
@@ -89,7 +90,7 @@ public sealed class ArsenalService : IArsenalService
         string? gw, string? mask, IProgress<string>? log = null, CancellationToken ct = default)
     {
         var cmd = Render(t, ip, port, mac, gw, mask).Trim();
-        if (cmd.Length == 0) throw new InvalidOperationException("template command is empty");
+        if (cmd.Length == 0) throw new InvalidOperationException("la commande du modèle est vide");
 
         // educational safety guard
         var lower = cmd.ToLowerInvariant();
@@ -97,15 +98,15 @@ public sealed class ArsenalService : IArsenalService
         {
             if (lower.Contains(bad, StringComparison.Ordinal))
             {
-                var refusal = $"refused: command contains forbidden token '{bad.Trim()}' (educational safety guard)";
+                var refusal = $"refusé : la commande contient le jeton interdit '{bad.Trim()}' (garde-fou pédagogique)";
                 _log.Warn("arsenal", refusal);
-                log?.Report("[refused] " + refusal);
+                log?.Report("[refusé] " + refusal);
                 return refusal;
             }
         }
 
         var args = SplitArgs(cmd);
-        if (args.Count == 0) throw new InvalidOperationException("template command is empty");
+        if (args.Count == 0) throw new InvalidOperationException("la commande du modèle est vide");
 
         var first = args[0].ToLowerInvariant();
         var exe = args[0];
@@ -113,9 +114,9 @@ public sealed class ArsenalService : IArsenalService
         {
             var resolved = _tools.ResolveTool(first)
                 ?? throw new InvalidOperationException(
-                    $"{first} is not installed - install it first (Nmap Scanner / Web Scanner pages).");
+                    $"{first} n'est pas installé - installez-le d'abord (pages Nmap Scanner / Web Scanner).");
             exe = resolved;
-            log?.Report($"resolved {first} -> {exe}");
+            log?.Report($"résolu {first} -> {exe}");
         }
         // other first tokens (arp, powershell, ping, ...) run directly - real Windows tools on PATH.
 
@@ -145,13 +146,13 @@ public sealed class ArsenalService : IArsenalService
         catch (OperationCanceledException)
         {
             try { proc.Kill(entireProcessTree: true); } catch { /* already gone */ }
-            log?.Report("[cancelled]");
+            log?.Report("[annulé]");
             throw;
         }
         try { await Task.WhenAll(tOut, tErr); } catch { /* pump errors already swallowed */ }
 
-        log?.Report($"[exit {proc.ExitCode}]");
-        _log.Info("arsenal", $"template '{t.Name}' finished (exit {proc.ExitCode})");
+        log?.Report($"[code de sortie {proc.ExitCode}]");
+        _log.Info("arsenal", $"modèle '{t.Name}' terminé (code de sortie {proc.ExitCode})");
         lock (outBuf) return outBuf.ToString();
     }
 

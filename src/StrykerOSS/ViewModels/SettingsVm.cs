@@ -25,7 +25,7 @@ public partial class SettingsVm : ObservableObject
     [ObservableProperty] private string _defaultAuthor = "StrykerOSS Operator";
 
     // ---- read-only info ----
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private bool _isElevated;
     [ObservableProperty] private string _windowsVersion = "";
     [ObservableProperty] private string _machineName = "";
@@ -63,7 +63,7 @@ public partial class SettingsVm : ObservableObject
     [RelayCommand]
     private void AutoDetect()
     {
-        Status = "Auto-detecting tool paths ...";
+        Status = "Détection automatique des chemins d'outils ...";
         var nmap = _tools.ResolveTool("nmap");
         var nuclei = _tools.ResolveTool("nuclei");
         var msf = _tools.ResolveTool("msfvenom") ?? _tools.ResolveTool("msfconsole");
@@ -72,8 +72,8 @@ public partial class SettingsVm : ObservableObject
         if (nuclei != null) NucleiPath = nuclei;
         if (msf != null) MsfPath = msf;
 
-        Status = $"Auto-detect done - nmap: {nmap ?? "not found"} · nuclei: {nuclei ?? "not found"} · msf: {msf ?? "not found"}";
-        _log.Info("settings", $"auto-detect: nmap={nmap ?? "-"} nuclei={nuclei ?? "-"} msf={msf ?? "-"}");
+        Status = $"Détection terminée - nmap : {nmap ?? "introuvable"} · nuclei : {nuclei ?? "introuvable"} · msf : {msf ?? "introuvable"}";
+        _log.Info("settings", $"détection auto : nmap={nmap ?? "-"} nuclei={nuclei ?? "-"} msf={msf ?? "-"}");
     }
 
     [RelayCommand]
@@ -81,8 +81,8 @@ public partial class SettingsVm : ObservableObject
     {
         var dlg = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Select executable",
-            Filter = "Executables (*.exe)|*.exe|Batch files (*.bat;*.cmd)|*.bat;*.cmd|All files (*.*)|*.*",
+            Title = "Sélectionner un exécutable",
+            Filter = "Exécutables (*.exe)|*.exe|Fichiers batch (*.bat;*.cmd)|*.bat;*.cmd|Tous les fichiers (*.*)|*.*",
             CheckFileExists = true
         };
         if (dlg.ShowDialog() != true) return;
@@ -92,7 +92,7 @@ public partial class SettingsVm : ObservableObject
             case "nmap": NmapPath = dlg.FileName; break;
             case "nuclei": NucleiPath = dlg.FileName; break;
             case "msf": MsfPath = dlg.FileName; break;
-            default: Status = "Unknown browse target: " + which; break;
+            default: Status = "Cible de parcours inconnue : " + which; break;
         }
     }
 
@@ -114,13 +114,13 @@ public partial class SettingsVm : ObservableObject
             v.DefaultAuthor = string.IsNullOrWhiteSpace(DefaultAuthor) ? "StrykerOSS Operator" : DefaultAuthor.Trim();
 
             _settings.Save();
-            Status = "Saved";
-            _log.Info("settings", "settings saved to settings.json");
+            Status = "Enregistré";
+            _log.Info("settings", "paramètres enregistrés dans settings.json");
         }
         catch (Exception ex)
         {
-            _log.Error("settings", "save failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("settings", "échec de l'enregistrement", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -140,8 +140,8 @@ public partial class SettingsVm : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Error("settings", "open data folder failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("settings", "échec de l'ouverture du dossier de données", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 

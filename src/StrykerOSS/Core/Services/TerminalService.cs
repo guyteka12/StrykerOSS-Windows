@@ -38,15 +38,15 @@ public sealed class TerminalService : ITerminalService
                 {
                     _log.Warn("terminal", "wsl requested but not installed");
                     throw new InvalidOperationException(
-                        "WSL was not found on this machine. Install it from an elevated prompt with: wsl --install " +
-                        "(requires a reboot) - https://learn.microsoft.com/windows/wsl/install");
+                        "WSL est introuvable sur cette machine. Installez-le depuis une invite élevée avec : wsl --install " +
+                        "(redémarrage requis) - https://learn.microsoft.com/windows/wsl/install");
                 }
                 fileName = "wsl.exe";
                 arguments = string.Empty;
                 break;
 
             default:
-                throw new InvalidOperationException($"Unknown shell '{shell}'. Supported shells: powershell, cmd, wsl.");
+                throw new InvalidOperationException($"Shell inconnu '{shell}'. Shells pris en charge : powershell, cmd, wsl.");
         }
 
         var psi = new ProcessStartInfo
@@ -65,12 +65,12 @@ public sealed class TerminalService : ITerminalService
 
         ct.ThrowIfCancellationRequested();
 
-        var p = Process.Start(psi) ?? throw new InvalidOperationException($"Failed to start {fileName}.");
+        var p = Process.Start(psi) ?? throw new InvalidOperationException($"Échec du démarrage de {fileName}.");
         var session = new TerminalSession(p, output);
         session.BeginReads();
 
         _log.Info("terminal", $"{key} session started (pid {p.Id}, cwd {psi.WorkingDirectory})");
-        output?.Report($"[{key} session started - pid {p.Id}]");
+        output?.Report($"[session {key} démarrée - pid {p.Id}]");
         return session;
     }
 
@@ -142,13 +142,13 @@ internal sealed class TerminalSession : ITerminalSession
         }
         catch (Exception ex)
         {
-            _output?.Report($"[write failed: {ex.Message}]");
+            _output?.Report($"[échec d'écriture : {ex.Message}]");
         }
     }
 
     private void OnProcessExited(object? sender, EventArgs e)
     {
-        _output?.Report($"[session exited - pid {_p.Id}]");
+        _output?.Report($"[session terminée - pid {_p.Id}]");
         try { Exited?.Invoke(); } catch { /* subscriber faults must not kill the notifier */ }
     }
 

@@ -13,7 +13,7 @@ public partial class MsfVm : ObservableObject
     private int _loadingSessions;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private bool _detectDone;
     [ObservableProperty] private bool _detected;
     [ObservableProperty] private bool _showNotFound;
@@ -72,16 +72,16 @@ public partial class MsfVm : ObservableObject
         IsBusy = true;
         try
         {
-            Status = "Detecting Metasploit Framework...";
+            Status = "Détection du Metasploit Framework...";
             Detected = await _msf.DetectAsync();
             DetectDone = true;
             ShowNotFound = !Detected;
             MsfPathDisplay = _msf.MsfPath;
-            Status = Detected ? $"Metasploit found: {_msf.MsfPath}" : "Metasploit not found - install it to continue.";
+            Status = Detected ? $"Metasploit trouvé : {_msf.MsfPath}" : "Metasploit introuvable - installez-le pour continuer.";
             _log.Info("msf", Status);
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "detect failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "detect failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -98,7 +98,7 @@ public partial class MsfVm : ObservableObject
         s.MsfRpcPass = RpcPass ?? "";
         _settings.Save();
         RpcPort = s.MsfRpcPort.ToString();
-        Status = $"MSGRPC settings saved ({s.MsfRpcHost}:{s.MsfRpcPort}).";
+        Status = $"Paramètres MSGRPC enregistrés ({s.MsfRpcHost}:{s.MsfRpcPort}).";
         _log.Info("msf", "RPC settings saved");
     }
 
@@ -109,22 +109,22 @@ public partial class MsfVm : ObservableObject
         IsBusy = true;
         try
         {
-            Status = "Connecting to msfrpcd...";
+            Status = "Connexion à msfrpcd...";
             var ok = await _msf.ConnectRpcAsync(new Progress<string>(l =>
                 App.Current.Dispatcher.Invoke(() => { AddConsole(l); })), ct);
             IsConnected = ok;
             if (ok)
             {
-                Status = "MSGRPC connected - loading sessions...";
+                Status = "MSGRPC connecté - chargement des sessions...";
                 await LoadSessionsAsync();
             }
             else
             {
-                Status = "MSGRPC connect failed - check credentials and that msfrpcd is running.";
+                Status = "Échec de connexion MSGRPC - vérifiez les identifiants et que msfrpcd est en cours d'exécution.";
             }
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "connect failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "connect failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -136,9 +136,9 @@ public partial class MsfVm : ObservableObject
         {
             await _msf.DisconnectAsync();
             IsConnected = false;
-            Status = "MSGRPC disconnected.";
+            Status = "MSGRPC déconnecté.";
         }
-        catch (Exception ex) { _log.Error("msf", "disconnect failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("msf", "disconnect failed", ex); Status = "Erreur : " + ex.Message; }
     }
 
     // ---- sessions ----
@@ -150,11 +150,11 @@ public partial class MsfVm : ObservableObject
         IsBusy = true;
         try
         {
-            Status = "Loading sessions...";
+            Status = "Chargement des sessions...";
             await LoadSessionsAsync();
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "session refresh failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "session refresh failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -166,11 +166,11 @@ public partial class MsfVm : ObservableObject
         try
         {
             var ok = await _msf.KillSessionAsync(sid);
-            Status = ok ? $"Session {sid} killed." : $"Failed to kill session {sid}.";
+            Status = ok ? $"Session {sid} terminée." : $"Échec de l'arrêt de la session {sid}.";
             if (ok) await LoadSessionsAsync();
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "kill session failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "kill session failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -185,7 +185,7 @@ public partial class MsfVm : ObservableObject
                 Sessions.Clear();
                 foreach (var s in list) Sessions.Add(s);
             });
-            Status = $"{list.Count} session(s) open.";
+            Status = $"{list.Count} session(s) ouverte(s).";
         }
         finally
         {
@@ -209,22 +209,22 @@ public partial class MsfVm : ObservableObject
     private async Task SearchAsync(CancellationToken ct)
     {
         if (IsBusy) return;
-        if (!IsConnected) { Status = "Connect to msfrpcd first."; return; }
-        if (string.IsNullOrWhiteSpace(SearchTerm)) { Status = "Enter a module search term."; return; }
+        if (!IsConnected) { Status = "Connectez-vous d'abord à msfrpcd."; return; }
+        if (string.IsNullOrWhiteSpace(SearchTerm)) { Status = "Saisissez un terme de recherche de module."; return; }
         IsBusy = true;
         try
         {
-            Status = $"Searching modules for '{SearchTerm.Trim()}'...";
+            Status = $"Recherche de modules pour '{SearchTerm.Trim()}'...";
             var list = await _msf.SearchModulesAsync(SearchTerm.Trim(), 50);
             App.Current.Dispatcher.Invoke(() =>
             {
                 Modules.Clear();
                 foreach (var m in list) Modules.Add(new MsfModuleRow(m));
             });
-            Status = $"{list.Count} module(s) found.";
+            Status = $"{list.Count} module(s) trouvé(s).";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "module search failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "module search failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -232,21 +232,21 @@ public partial class MsfVm : ObservableObject
     private async Task RecentExploitsAsync(CancellationToken ct)
     {
         if (IsBusy) return;
-        if (!IsConnected) { Status = "Connect to msfrpcd first."; return; }
+        if (!IsConnected) { Status = "Connectez-vous d'abord à msfrpcd."; return; }
         IsBusy = true;
         try
         {
-            Status = "Loading exploit list from msfrpcd...";
+            Status = "Chargement de la liste des exploits depuis msfrpcd...";
             var list = await _msf.RecentExploitsAsync(50);
             App.Current.Dispatcher.Invoke(() =>
             {
                 Modules.Clear();
                 foreach (var m in list) Modules.Add(new MsfModuleRow(m));
             });
-            Status = $"{list.Count} exploit(s) available.";
+            Status = $"{list.Count} exploit(s) disponible(s).";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "exploit list failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "exploit list failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -255,14 +255,14 @@ public partial class MsfVm : ObservableObject
     {
         if (row is null) return;
         SelectedModule = row;
-        Status = $"Module '{row.FullName}' selected - set options and execute.";
+        Status = $"Module '{row.FullName}' sélectionné - définissez les options puis exécutez.";
     }
 
     [RelayCommand]
     private async Task ExecuteModuleAsync(CancellationToken ct)
     {
         if (IsBusy || SelectedModule is null) return;
-        if (!IsConnected) { Status = "Connect to msfrpcd first."; return; }
+        if (!IsConnected) { Status = "Connectez-vous d'abord à msfrpcd."; return; }
         IsBusy = true;
         try
         {
@@ -275,17 +275,17 @@ public partial class MsfVm : ObservableObject
             AddConsole($"> use {module}");
             foreach (var kv in opts) AddConsole($"> set {kv.Key} {kv.Value}");
             AddConsole("> run");
-            Status = $"Running {module} via msfrpcd console (polling output)...";
+            Status = $"Exécution de {module} via la console msfrpcd (lecture de la sortie)...";
 
             var output = await _msf.RunModuleAsync(module, opts,
                 new Progress<string>(l => App.Current.Dispatcher.Invoke(() => AddConsole(l))), ct);
 
             foreach (var line in output.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries))
                 AddConsole(line);
-            Status = $"Module console run finished for {module}.";
+            Status = $"Exécution console du module {module} terminée.";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "module run failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "module run failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -295,8 +295,8 @@ public partial class MsfVm : ObservableObject
     private async Task GeneratePayloadAsync(CancellationToken ct)
     {
         if (IsBusy) return;
-        if (string.IsNullOrWhiteSpace(Payload)) { Status = "Enter a payload name."; return; }
-        if (!int.TryParse(PlPort, out var lport)) { Status = "Invalid LPORT."; return; }
+        if (string.IsNullOrWhiteSpace(Payload)) { Status = "Saisissez un nom de payload."; return; }
+        if (!int.TryParse(PlPort, out var lport)) { Status = "LPORT invalide."; return; }
         IsBusy = true;
         PayloadSaved = false;
         try
@@ -304,17 +304,17 @@ public partial class MsfVm : ObservableObject
             var safeName = Payload.Trim().Replace('/', '_');
             var outPath = Path.Combine(_settings.EnsureDataDir(), "payloads", $"{safeName}.{SelectedFormat}");
             PayloadOutPath = outPath;
-            Status = $"Generating {Payload.Trim()} ({SelectedFormat}) with msfvenom...";
+            Status = $"Génération de {Payload.Trim()} ({SelectedFormat}) avec msfvenom...";
 
             var result = await _msf.GeneratePayloadAsync(Payload.Trim(), PlHost.Trim(), lport, SelectedFormat,
                 outPath, new Progress<string>(l => App.Current.Dispatcher.Invoke(() => AddConsole(l))), ct);
 
             PayloadOutPath = result;
             PayloadSaved = File.Exists(result);
-            Status = PayloadSaved ? $"Payload saved: {result}" : "Payload generation failed - no output file.";
+            Status = PayloadSaved ? $"Payload enregistré : {result}" : "Échec de la génération du payload - aucun fichier de sortie.";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("msf", "payload generation failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("msf", "payload generation failed", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 

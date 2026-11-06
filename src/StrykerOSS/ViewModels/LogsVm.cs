@@ -21,7 +21,7 @@ public partial class LogsVm : ObservableObject
 
     [ObservableProperty] private string _selectedLevel = "ALL";
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
 
     public LogsVm(ILogger log, ISettings settings)
     {
@@ -73,7 +73,7 @@ public partial class LogsVm : ObservableObject
                 if (Passes(e)) Lines.Add(Format(e));
         }
         while (Lines.Count > 3000) Lines.RemoveAt(0);
-        Status = $"{Lines.Count} lines shown";
+        Status = $"{Lines.Count} lignes affichées";
     }
 
     private static string Format(LogEntry e) => $"[{e.Time:HH:mm:ss}] [{e.Level}] {e.Source}: {e.Message}";
@@ -82,7 +82,7 @@ public partial class LogsVm : ObservableObject
     private void ClearView()
     {
         Lines.Clear();
-        Status = "View cleared (log file and in-memory history untouched)";
+        Status = "Affichage effacé (fichier de journal et historique en mémoire intacts)";
     }
 
     [RelayCommand]
@@ -101,13 +101,13 @@ public partial class LogsVm : ObservableObject
             }
             File.WriteAllLines(path, snapshot);
 
-            Status = $"Exported {snapshot.Count} lines -> {path}";
-            _log.Info("logs-ui", $"exported {snapshot.Count} log lines to {path}");
+            Status = $"{snapshot.Count} lignes exportées -> {path}";
+            _log.Info("logs-ui", $"{snapshot.Count} lignes de journal exportées vers {path}");
         }
         catch (Exception ex)
         {
-            _log.Error("logs-ui", "export failed", ex);
-            Status = "Export failed: " + ex.Message;
+            _log.Error("logs-ui", "échec de l'export", ex);
+            Status = "Échec de l'export : " + ex.Message;
         }
     }
 }

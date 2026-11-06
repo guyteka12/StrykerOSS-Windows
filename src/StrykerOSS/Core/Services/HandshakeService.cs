@@ -70,8 +70,8 @@ public sealed class HandshakeService : IHandshakeService
 
     public async Task<HandshakeInfo> AnalyzeAsync(string pcapPath, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(pcapPath)) throw new ArgumentException("Capture path required", nameof(pcapPath));
-        if (!File.Exists(pcapPath)) throw new FileNotFoundException("Capture file not found", pcapPath);
+        if (string.IsNullOrWhiteSpace(pcapPath)) throw new ArgumentException("Chemin de capture requis", nameof(pcapPath));
+        if (!File.Exists(pcapPath)) throw new FileNotFoundException("Fichier de capture introuvable", pcapPath);
 
         var parsed = await Task.Run(() =>
         {
@@ -97,15 +97,15 @@ public sealed class HandshakeService : IHandshakeService
 
         var info = new HandshakeInfo(0, pcapPath, ssid, bssid, frames, hasHandshake, clients, DateTime.Now);
         _log.Info("handshakes",
-            $"{Path.GetFileName(pcapPath)}: {parsed.PacketCount} packets, {parsed.EapolCount} EAPOL frames, " +
-            $"handshake={(hasHandshake ? "COMPLETE" : "INCOMPLETE")}" + (ssid != null ? $", ssid={ssid}" : ""));
+            $"{Path.GetFileName(pcapPath)} : {parsed.PacketCount} paquets, {parsed.EapolCount} trames EAPOL, " +
+            $"handshake={(hasHandshake ? "COMPLET" : "INCOMPLET")}" + (ssid != null ? $", ssid={ssid}" : ""));
         return info;
     }
 
     public async Task<List<HandshakeInfo>> AnalyzeDirectoryAsync(string dir, IProgress<string>? log = null, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(dir)) throw new ArgumentException("Folder required", nameof(dir));
-        if (!Directory.Exists(dir)) throw new DirectoryNotFoundException($"Folder not found: {dir}");
+        if (string.IsNullOrWhiteSpace(dir)) throw new ArgumentException("Dossier requis", nameof(dir));
+        if (!Directory.Exists(dir)) throw new DirectoryNotFoundException($"Dossier introuvable : {dir}");
 
         string[] exts = { ".pcap", ".cap", ".pcapng" };
         var files = Directory.EnumerateFiles(dir)
@@ -113,7 +113,7 @@ public sealed class HandshakeService : IHandshakeService
             .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        log?.Report($"Found {files.Count} capture file(s) in {dir}");
+        log?.Report($"Trouvé {files.Count} fichier(s) de capture dans {dir}");
         var result = new List<HandshakeInfo>();
         foreach (var f in files)
         {
@@ -122,13 +122,13 @@ public sealed class HandshakeService : IHandshakeService
             {
                 var info = await AnalyzeAsync(f, ct).ConfigureAwait(false);
                 result.Add(info);
-                log?.Report($"{Path.GetFileName(f)}: eapol={info.EapolFrames} handshake={(info.HasHandshake ? "COMPLETE" : "INCOMPLETE")}");
+                log?.Report($"{Path.GetFileName(f)} : eapol={info.EapolFrames} handshake={(info.HasHandshake ? "COMPLET" : "INCOMPLET")}");
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                _log.Error("handshakes", $"failed to parse {f}", ex);
-                log?.Report($"ERROR {Path.GetFileName(f)}: {ex.Message}");
+                _log.Error("handshakes", $"Échec de l'analyse de {f}", ex);
+                log?.Report($"ERREUR {Path.GetFileName(f)} : {ex.Message}");
             }
         }
         return result;
@@ -137,16 +137,16 @@ public sealed class HandshakeService : IHandshakeService
     public async Task<string> ExportHashcat22000Async(HandshakeInfo h, string outDir)
     {
         if (h is null) throw new ArgumentNullException(nameof(h));
-        if (string.IsNullOrWhiteSpace(outDir)) throw new ArgumentException("Output directory required", nameof(outDir));
-        if (!File.Exists(h.FilePath)) throw new FileNotFoundException("Capture file not found", h.FilePath);
+        if (string.IsNullOrWhiteSpace(outDir)) throw new ArgumentException("Répertoire de sortie requis", nameof(outDir));
+        if (!File.Exists(h.FilePath)) throw new FileNotFoundException("Fichier de capture introuvable", h.FilePath);
 
         // reuse the cached parse (exact captured bytes) or re-parse the real file
         var parsed = await Task.Run(() =>
             _cache.TryGetValue(Key(h.FilePath), out var c) ? c : ParseFile(h.FilePath, CancellationToken.None)).ConfigureAwait(false);
 
-        var s = parsed.Best() ?? throw new InvalidOperationException("No EAPOL frames found in this capture.");
+        var s = parsed.Best() ?? throw new InvalidOperationException("Aucune trame EAPOL trouvée dans cette capture.");
         if (s.Eapol == null || s.Mic == null || s.ApNonce == null || s.StaNonce == null)
-            throw new InvalidOperationException("Capture lacks M1 nonce + M2/M4 MIC material required for a 22000 hash.");
+            throw new InvalidOperationException("La capture ne contient pas le nonce M1 + le matériel MIC M2/M4 requis pour un hash 22000.");
 
         // real hashcat 22000 message-pair code (0=M1M2, 2=M2M3, 3=M2M4, 4=M3M4, 1=M1M4)
         int msgPair = s.EapolMsg == 2 ? (s.M1 ? 0 : s.M3 ? 2 : 3) : (s.M1 ? 1 : s.M3 ? 4 : 3);
@@ -168,14 +168,14 @@ public sealed class HandshakeService : IHandshakeService
             : NoColon(s.Ap);
         string outPath = Path.Combine(outDir, baseName + ".22000.txt");
         await File.WriteAllTextAsync(outPath, string.Join(Environment.NewLine, lines) + Environment.NewLine).ConfigureAwait(false);
-        _log.Info("handshakes", $"exported {lines.Count} hashcat 22000 line(s) -> {outPath}");
+        _log.Info("handshakes", $"exporté {lines.Count} ligne(s) hashcat 22000 -> {outPath}");
         return outPath;
     }
 
     public async Task<string> ExportCsvAsync(IEnumerable<HandshakeInfo> list, string outPath)
     {
         if (list is null) throw new ArgumentNullException(nameof(list));
-        if (string.IsNullOrWhiteSpace(outPath)) throw new ArgumentException("Output path required", nameof(outPath));
+        if (string.IsNullOrWhiteSpace(outPath)) throw new ArgumentException("Chemin de sortie requis", nameof(outPath));
 
         var sb = new StringBuilder();
         sb.AppendLine("file,ssid,bssid,eapol_frames,has_handshake,clients");
@@ -191,7 +191,7 @@ public sealed class HandshakeService : IHandshakeService
         var dir = Path.GetDirectoryName(Path.GetFullPath(outPath));
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
         await File.WriteAllTextAsync(outPath, sb.ToString()).ConfigureAwait(false);
-        _log.Info("handshakes", $"exported CSV ({rows} rows) -> {outPath}");
+        _log.Info("handshakes", $"CSV exporté ({rows} lignes) -> {outPath}");
         return outPath;
     }
 
@@ -200,7 +200,7 @@ public sealed class HandshakeService : IHandshakeService
     private ParsedCapture ParseFile(string path, CancellationToken ct)
     {
         byte[] d = File.ReadAllBytes(path);
-        if (d.Length < 24) throw new InvalidDataException($"File too small to be a capture ({d.Length} bytes): {path}");
+        if (d.Length < 24) throw new InvalidDataException($"Fichier trop petit pour être une capture ({d.Length} octets) : {path}");
 
         var cap = new ParsedCapture { FilePath = path };
         uint magic = ReadU32(d, 0, le: true);
@@ -209,7 +209,7 @@ public sealed class HandshakeService : IHandshakeService
         else if (magic == 0xA1B2C3D4 || magic == 0xD4C3B2A1)
             ParsePcap(d, cap, ct);                                     // classic pcap
         else
-            throw new InvalidDataException($"Unsupported capture magic 0x{magic:X8}: {path}");
+            throw new InvalidDataException($"Nombre magique de capture non pris en charge 0x{magic:X8} : {path}");
         return cap;
     }
 

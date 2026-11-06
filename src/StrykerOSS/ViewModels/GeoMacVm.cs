@@ -16,7 +16,7 @@ public partial class GeoMacVm : ObservableObject
     private readonly ILogger _log;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string? _myIp;
     [ObservableProperty] private string _lookupIp = "";
     [ObservableProperty] private bool _hasLookup;
@@ -42,7 +42,7 @@ public partial class GeoMacVm : ObservableObject
         _ = Task.Run(async () =>
         {
             try { await LoadPointsAsync(); }
-            catch (Exception ex) { _log.Warn("geomac", $"initial load failed: {ex.Message}"); }
+            catch (Exception ex) { _log.Warn("geomac", $"échec du chargement initial : {ex.Message}"); }
         });
     }
 
@@ -55,19 +55,19 @@ public partial class GeoMacVm : ObservableObject
         IsBusy = true;
         try
         {
-            Status = "Resolving public IP via ip-api.com...";
+            Status = "Résolution de l'IP publique via ip-api.com...";
             var ip = await _geo.PublicIpAsync();
             MyIp = ip;
             if (string.IsNullOrEmpty(ip))
             {
-                Status = "Could not resolve public IP.";
+                Status = "Impossible de résoudre l'IP publique.";
                 return;
             }
-            Status = $"Public IP {ip} - looking up geolocation...";
+            Status = $"IP publique {ip} - localisation géographique en cours...";
             await ApplyLookupAsync(ip, ct);
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("geomac", "public IP lookup failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("geomac", "échec de la localisation de l'IP publique", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -75,15 +75,15 @@ public partial class GeoMacVm : ObservableObject
     private async Task LookupAsync(CancellationToken ct)
     {
         if (IsBusy) return;
-        if (string.IsNullOrWhiteSpace(LookupIp)) { Status = "Enter an IP to look up."; return; }
+        if (string.IsNullOrWhiteSpace(LookupIp)) { Status = "Saisissez une IP à localiser."; return; }
         IsBusy = true;
         try
         {
-            Status = $"Looking up {LookupIp.Trim()}...";
+            Status = $"Localisation de {LookupIp.Trim()}...";
             await ApplyLookupAsync(LookupIp.Trim(), ct);
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("geomac", "lookup failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("geomac", "échec de la localisation", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -95,7 +95,7 @@ public partial class GeoMacVm : ObservableObject
             if (info is null)
             {
                 HasLookup = false;
-                Status = $"Lookup failed for {ip}.";
+                Status = $"Échec de la localisation pour {ip}.";
                 return;
             }
             ResQuery = info.Query;
@@ -107,9 +107,9 @@ public partial class GeoMacVm : ObservableObject
             ResAs = info.As;
             ResCoords = $"{info.Lat.ToString(CultureInfo.InvariantCulture)}, {info.Lon.ToString(CultureInfo.InvariantCulture)}";
             HasLookup = true;
-            Status = $"Lookup OK: {info.City}, {info.Country}.";
+            Status = $"Localisation réussie : {info.City}, {info.Country}.";
         });
-        _log.Info("geomac", $"IP lookup {ip}");
+        _log.Info("geomac", $"Localisation IP {ip}");
     }
 
     // ---- points ----
@@ -122,9 +122,9 @@ public partial class GeoMacVm : ObservableObject
         try
         {
             await LoadPointsAsync();
-            Status = $"{Points.Count} geo point(s) loaded.";
+            Status = $"{Points.Count} point(s) géolocalisé(s) chargé(s).";
         }
-        catch (Exception ex) { _log.Error("geomac", "reload failed", ex); Status = "Error: " + ex.Message; }
+        catch (Exception ex) { _log.Error("geomac", "échec du rechargement", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -148,24 +148,24 @@ public partial class GeoMacVm : ObservableObject
         {
             var dlg = new OpenFileDialog
             {
-                Title = "Import WiGLE CSV",
-                Filter = "WiGLE CSV (*.csv)|*.csv|All files (*.*)|*.*"
+                Title = "Importer un CSV WiGLE",
+                Filter = "CSV WiGLE (*.csv)|*.csv|Tous les fichiers (*.*)|*.*"
             };
             if (dlg.ShowDialog() != true)
             {
-                Status = "Import cancelled.";
+                Status = "Import annulé.";
                 return;
             }
-            Status = "Parsing WiGLE CSV...";
+            Status = "Analyse du CSV WiGLE...";
             var pts = await _geo.ImportWiGleCsvAsync(dlg.FileName,
                 new Progress<string>(l => App.Current.Dispatcher.Invoke(() => Status = l)));
-            Status = $"Saving {pts.Count} point(s) to the database...";
+            Status = $"Enregistrement de {pts.Count} point(s) en base de données...";
             foreach (var p in pts) await _db.AddGeoPointAsync(p);
             await LoadPointsAsync();
-            Status = $"Imported {pts.Count} WiGLE point(s).";
+            Status = $"{pts.Count} point(s) WiGLE importé(s).";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("geomac", "WiGLE import failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("geomac", "échec de l'import WiGLE", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -176,20 +176,20 @@ public partial class GeoMacVm : ObservableObject
         IsBusy = true;
         try
         {
-            if (Points.Count == 0) { Status = "No geo points to export."; return; }
+            if (Points.Count == 0) { Status = "Aucun point géolocalisé à exporter."; return; }
             var dlg = new SaveFileDialog
             {
-                Title = "Export KML",
+                Title = "Exporter en KML",
                 Filter = "KML (*.kml)|*.kml",
                 FileName = $"geomac_{DateTime.Now:yyyyMMdd_HHmmss}.kml",
                 InitialDirectory = SafeExportsDir()
             };
-            if (dlg.ShowDialog() != true) { Status = "Export cancelled."; return; }
+            if (dlg.ShowDialog() != true) { Status = "Export annulé."; return; }
             var path = await _geo.ExportKmlAsync(Points.ToList(), dlg.FileName);
-            Status = $"KML exported: {path}";
+            Status = $"KML exporté : {path}";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("geomac", "KML export failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("geomac", "échec de l'export KML", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -200,20 +200,20 @@ public partial class GeoMacVm : ObservableObject
         IsBusy = true;
         try
         {
-            if (Points.Count == 0) { Status = "No geo points to export."; return; }
+            if (Points.Count == 0) { Status = "Aucun point géolocalisé à exporter."; return; }
             var dlg = new SaveFileDialog
             {
-                Title = "Export CSV",
+                Title = "Exporter en CSV",
                 Filter = "CSV (*.csv)|*.csv",
                 FileName = $"geomac_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
                 InitialDirectory = SafeExportsDir()
             };
-            if (dlg.ShowDialog() != true) { Status = "Export cancelled."; return; }
+            if (dlg.ShowDialog() != true) { Status = "Export annulé."; return; }
             var path = await _geo.ExportCsvAsync(Points.ToList(), dlg.FileName);
-            Status = $"CSV exported: {path}";
+            Status = $"CSV exporté : {path}";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("geomac", "CSV export failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("geomac", "échec de l'export CSV", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -227,10 +227,10 @@ public partial class GeoMacVm : ObservableObject
             var label = SelectedPoint.Label;
             await _db.DeleteGeoPointAsync(SelectedPoint.Id);
             await LoadPointsAsync();
-            Status = $"Deleted point '{label}'.";
+            Status = $"Point « {label} » supprimé.";
         }
-        catch (OperationCanceledException) { Status = "Cancelled"; }
-        catch (Exception ex) { _log.Error("geomac", "delete failed", ex); Status = "Error: " + ex.Message; }
+        catch (OperationCanceledException) { Status = "Annulé"; }
+        catch (Exception ex) { _log.Error("geomac", "échec de la suppression", ex); Status = "Erreur : " + ex.Message; }
         finally { IsBusy = false; }
     }
 
@@ -238,13 +238,13 @@ public partial class GeoMacVm : ObservableObject
     private void OpenMap(GeoPoint? p)
     {
         var pt = p ?? SelectedPoint;
-        if (pt is null) { Status = "Select a point first."; return; }
-        if (pt.Lat is null || pt.Lon is null) { Status = "Point has no coordinates."; return; }
+        if (pt is null) { Status = "Sélectionnez d'abord un point."; return; }
+        if (pt.Lat is null || pt.Lon is null) { Status = "Le point n'a pas de coordonnées."; return; }
         var lat = pt.Lat.Value.ToString(CultureInfo.InvariantCulture);
         var lon = pt.Lon.Value.ToString(CultureInfo.InvariantCulture);
         var url = $"https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map=17/{lat}/{lon}";
         Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-        Status = $"Opened OpenStreetMap for '{pt.Label}'.";
+        Status = $"OpenStreetMap ouvert pour « {pt.Label} ».";
     }
 
     private string SafeExportsDir()

@@ -18,7 +18,7 @@ public partial class WifiVm : ObservableObject
     private readonly ILogger _log;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _password = "";
     [ObservableProperty] private WifiNetworkRow? _selectedNetwork;
     [ObservableProperty] private WifiProfileRow? _selectedProfile;
@@ -48,7 +48,7 @@ public partial class WifiVm : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Status = "Loading adapters and saved profiles...";
+        Status = "Chargement des adaptateurs et des profils enregistrés...";
         try
         {
             await RefreshAdaptersAsync();
@@ -58,13 +58,13 @@ public partial class WifiVm : ObservableObject
                 Profiles.Clear();
                 foreach (var p in profiles) Profiles.Add(new WifiProfileRow(p.Name, p.Auth));
             });
-            Status = $"Ready - {Adapters.Count} adapter(s), {Profiles.Count} profile(s)";
-            _log.Info("wifi", $"loaded {Adapters.Count} adapter(s), {Profiles.Count} profile(s)");
+            Status = $"Prêt — {Adapters.Count} adaptateur(s), {Profiles.Count} profil(s)";
+            _log.Info("wifi", $"{Adapters.Count} adaptateur(s), {Profiles.Count} profil(s) chargés");
         }
         catch (Exception ex)
         {
-            _log.Error("wifi", "loading adapters/profiles failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("wifi", "échec du chargement des adaptateurs/profils", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -74,7 +74,7 @@ public partial class WifiVm : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Status = "Scanning...";
+        Status = "Analyse en cours...";
         try
         {
             var progress = new Progress<string>(s => App.Current.Dispatcher.Invoke(() => AddLog(s)));
@@ -86,18 +86,18 @@ public partial class WifiVm : ObservableObject
                 foreach (var n in networks) Networks.Add(ToRow(n));
                 SelectedNetwork = null;
             });
-            Status = $"Found {networks.Count} network(s)";
-            _log.Info("wifi", $"scan finished: {networks.Count} network(s)");
+            Status = $"{networks.Count} réseau(x) trouvé(s)";
+            _log.Info("wifi", $"analyse terminée : {networks.Count} réseau(s)");
         }
         catch (OperationCanceledException)
         {
-            Status = "Scan cancelled";
-            _log.Warn("wifi", "scan cancelled");
+            Status = "Analyse annulée";
+            _log.Warn("wifi", "analyse annulée");
         }
         catch (Exception ex)
         {
-            _log.Error("wifi", "scan failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("wifi", "échec de l'analyse", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -110,7 +110,7 @@ public partial class WifiVm : ObservableObject
 
         if (string.IsNullOrWhiteSpace(net.ConnectSsid))
         {
-            Status = "Hidden network - its SSID is unknown, cannot build a connection profile.";
+            Status = "Réseau masqué — son SSID est inconnu, impossible de créer un profil de connexion.";
             return;
         }
 
@@ -122,13 +122,13 @@ public partial class WifiVm : ObservableObject
             bool lengthOk = wep ? len is 5 or 13 or 10 or 26 : len is >= 8 and <= 63;
             if (!lengthOk)
             {
-                Status = wep ? "WEP key must be 5/13 characters or 10/26 hex digits." : "Passphrase must be 8-63 characters.";
+                Status = wep ? "La clé WEP doit comporter 5/13 caractères ou 10/26 chiffres hexadécimaux." : "La phrase secrète doit contenir 8 à 63 caractères.";
                 return;
             }
         }
 
         IsBusy = true;
-        Status = $"Connecting to '{net.ConnectSsid}'...";
+        Status = $"Connexion à '{net.ConnectSsid}'...";
         try
         {
             var req = new WifiConnectRequest(net.ConnectSsid, Password, net.ConnectAuth);
@@ -136,18 +136,18 @@ public partial class WifiVm : ObservableObject
             await RefreshAdaptersAsync();
             await UpdateConnectedFlagsAsync();
             Status = ok
-                ? $"Connected to '{net.ConnectSsid}'."
-                : $"Could not confirm connection to '{net.ConnectSsid}' (15 s timeout).";
-            _log.Info("wifi", $"connect '{net.ConnectSsid}': {(ok ? "connected" : "timeout")}");
+                ? $"Connecté à '{net.ConnectSsid}'."
+                : $"Impossible de confirmer la connexion à '{net.ConnectSsid}' (délai de 15 s dépassé).";
+            _log.Info("wifi", $"connexion '{net.ConnectSsid}' : {(ok ? "connecté" : "délai dépassé")}");
         }
         catch (OperationCanceledException)
         {
-            Status = "Cancelled";
+            Status = "Annulé";
         }
         catch (Exception ex)
         {
-            _log.Error("wifi", $"connect to '{net.ConnectSsid}' failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("wifi", $"échec de la connexion à '{net.ConnectSsid}'", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -159,19 +159,19 @@ public partial class WifiVm : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Status = "Disconnecting...";
+        Status = "Déconnexion...";
         try
         {
             await _wifi.DisconnectAsync();
             await RefreshAdaptersAsync();
             await UpdateConnectedFlagsAsync();
-            Status = "Disconnected.";
-            _log.Info("wifi", "disconnect issued");
+            Status = "Déconnecté.";
+            _log.Info("wifi", "déconnexion demandée");
         }
         catch (Exception ex)
         {
-            _log.Error("wifi", "disconnect failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("wifi", "échec de la déconnexion", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -181,18 +181,18 @@ public partial class WifiVm : ObservableObject
     {
         if (IsBusy || row is null) return;
         IsBusy = true;
-        Status = $"Deleting profile '{row.Name}'...";
+        Status = $"Suppression du profil '{row.Name}'...";
         try
         {
             bool ok = await _wifi.DeleteProfileAsync(row.Name);
             App.Current.Dispatcher.Invoke(() => Profiles.Remove(row));
-            Status = ok ? $"Profile '{row.Name}' deleted." : $"Profile '{row.Name}' was not found.";
-            _log.Info("wifi", $"delete profile '{row.Name}': {ok}");
+            Status = ok ? $"Profil '{row.Name}' supprimé." : $"Profil '{row.Name}' introuvable.";
+            _log.Info("wifi", $"suppression du profil '{row.Name}' : {ok}");
         }
         catch (Exception ex)
         {
-            _log.Error("wifi", $"delete profile '{row.Name}' failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("wifi", $"échec de la suppression du profil '{row.Name}'", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally { IsBusy = false; }
     }
@@ -230,8 +230,8 @@ public partial class WifiVm : ObservableObject
 
     private static WifiNetworkRow ToRow(WifiNetwork n)
     {
-        string ssid = string.IsNullOrEmpty(n.Ssid) ? "<hidden>" : n.Ssid;
-        string bssid = string.IsNullOrWhiteSpace(n.Bssid) ? "BSSID unknown" : "BSSID " + n.Bssid;
+        string ssid = string.IsNullOrEmpty(n.Ssid) ? "<masqué>" : n.Ssid;
+        string bssid = string.IsNullOrWhiteSpace(n.Bssid) ? "BSSID inconnu" : "BSSID " + n.Bssid;
         return new WifiNetworkRow(
             ssid,
             bssid,

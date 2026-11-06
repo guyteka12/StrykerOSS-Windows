@@ -6,8 +6,10 @@ using CommunityToolkit.Mvvm.Input;
 namespace StrykerOSS.ViewModels;
 
 /// <summary>
-/// Tools Manager VM: real per-tool detection (path + version) and real installs
-/// (winget for nmap/hashcat, nuclei auto-downloader, manual guidance for msfvenom).
+/// VM du gestionnaire d'outils : détection réelle par outil (chemin + version) et
+/// installations réelles (winget pour nmap/hashcat, téléchargeur auto pour nuclei,
+/// MSI officiel pour Metasploit). Permet aussi de relancer l'assistant de première
+/// configuration à tout moment.
 /// </summary>
 public partial class ToolsVm : ObservableObject
 {
@@ -17,7 +19,7 @@ public partial class ToolsVm : ObservableObject
     public ObservableCollection<ToolStatus> Tools { get; } = new();
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _toolsDir = "";
 
     public ToolsVm(IToolsManager tools, ILogger log)
@@ -38,7 +40,7 @@ public partial class ToolsVm : ObservableObject
     private async Task LoadAsync()
     {
         IsBusy = true;
-        Status = "Probing nmap / nuclei / msfvenom / hashcat ...";
+        Status = "Sonde de nmap / nuclei / msfvenom / hashcat / tshark en cours...";
         try
         {
             var list = await Task.Run(() => _tools.StatusAsync());
@@ -48,13 +50,13 @@ public partial class ToolsVm : ObservableObject
                 foreach (var t in list) Tools.Add(t);
             });
             ToolsDir = _tools.ToolsDir();
-            Status = $"{list.Count(t => t.Found)} of {list.Count} tools installed";
-            _log.Info("tools-ui", $"refresh: {Status}");
+            Status = $"{list.Count(t => t.Found)} outil(s) installé(s) sur {list.Count}";
+            _log.Info("tools-ui", $"actualisation : {Status}");
         }
         catch (Exception ex)
         {
-            _log.Error("tools-ui", "status check failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("tools-ui", "vérification de l'état échouée", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally
         {
@@ -71,25 +73,42 @@ public partial class ToolsVm : ObservableObject
         {
             var progress = new Progress<string>(l =>
             {
-                // keep the caption readable: last progress line, trimmed
+                // garder la légende lisible : dernière ligne de progression, tronquée
                 Status = l.Length > 140 ? l.Substring(0, 140) + "…" : l;
             });
             var ok = await Task.Run(() => _tools.InstallAsync(key, progress));
             Status = ok
-                ? $"'{key}' installed successfully - refresh complete below."
-                : $"'{key}' install did not complete - see last message above.";
-            _log.Info("tools-ui", $"install '{key}' -> {ok}");
+                ? $"« {key} » installé avec succès — détection mise à jour ci-dessous."
+                : $"L'installation de « {key} » n'a pas abouti — voir le dernier message ci-dessus.";
+            _log.Info("tools-ui", $"installation « {key} » -> {ok}");
         }
         catch (Exception ex)
         {
-            _log.Error("tools-ui", $"install '{key}' failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("tools-ui", $"installation « {key} » échouée", ex);
+            Status = "Erreur : " + ex.Message;
         }
         finally
         {
             IsBusy = false;
         }
         await LoadAsync();
+    }
+
+    [RelayCommand]
+    private void OpenSetupWizard()
+    {
+        try
+        {
+            var wizard = new Views.SetupWindow(App.Services);
+            wizard.Owner = App.Current.MainWindow;
+            wizard.ShowDialog();
+            _ = LoadAsync(); // re-détection après le passage de l'assistant
+        }
+        catch (Exception ex)
+        {
+            _log.Error("tools-ui", "ouverture de l'assistant d'installation échouée", ex);
+            Status = "Erreur : " + ex.Message;
+        }
     }
 
     [RelayCommand]
@@ -108,8 +127,8 @@ public partial class ToolsVm : ObservableObject
         }
         catch (Exception ex)
         {
-            _log.Error("tools-ui", "open tools folder failed", ex);
-            Status = "Error: " + ex.Message;
+            _log.Error("tools-ui", "ouverture du dossier des outils échouée", ex);
+            Status = "Erreur : " + ex.Message;
         }
     }
 }

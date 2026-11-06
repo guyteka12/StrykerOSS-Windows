@@ -13,9 +13,9 @@ public partial class HidVm : ObservableObject
     private CancellationTokenSource? _runCts;
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _scriptPath = "";
-    [ObservableProperty] private string _scriptSummary = "No script loaded.";
+    [ObservableProperty] private string _scriptSummary = "Aucun script chargé.";
     [ObservableProperty] private bool _confirmExecute;
 
     public ObservableCollection<string> LogLines { get; } = new();
@@ -32,8 +32,8 @@ public partial class HidVm : ObservableObject
     {
         var dlg = new OpenFileDialog
         {
-            Title = "Open DuckyScript",
-            Filter = "DuckyScript (*.duck;*.txt)|*.duck;*.txt|All files (*.*)|*.*",
+            Title = "Ouvrir un DuckyScript",
+            Filter = "DuckyScript (*.duck;*.txt)|*.duck;*.txt|Tous les fichiers (*.*)|*.*",
             CheckFileExists = true
         };
         if (dlg.ShowDialog() != true) return;
@@ -47,32 +47,32 @@ public partial class HidVm : ObservableObject
         if (IsBusy) return;
         if (string.IsNullOrWhiteSpace(ScriptPath) || !File.Exists(ScriptPath))
         {
-            Status = "Open a .duck script first.";
+            Status = "Ouvrez d'abord un script .duck.";
             return;
         }
         if (!ConfirmExecute)
         {
-            Status = "Tick the confirmation box first - keys go to the FOCUSED window.";
+            Status = "Cochez d'abord la case de confirmation : les touches vont à la fenêtre AU PREMIER PLAN.";
             return;
         }
         IsBusy = true;
         _runCts = new CancellationTokenSource();
         try
         {
-            Log($"> run {ScriptPath} - focus the safe target window NOW");
+            Log($"> exécution de {ScriptPath} - placez le focus sur la fenêtre cible sûre MAINTENANT");
             _log.Info("hid", $"run requested: {ScriptPath}");
             await _hid.RunAsync(ScriptPath, new Progress<string>(Log), _runCts.Token);
-            Status = "Script finished.";
+            Status = "Script terminé.";
         }
         catch (OperationCanceledException)
         {
-            Status = "Stopped.";
-            Log("> stopped by user");
+            Status = "Arrêté.";
+            Log("> arrêté par l'utilisateur");
         }
         catch (Exception ex)
         {
             _log.Error("hid", "run failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
         finally
         {
@@ -89,12 +89,12 @@ public partial class HidVm : ObservableObject
         {
             _runCts?.Cancel();
             await _hid.StopAsync();
-            Status = "Stopped.";
+            Status = "Arrêté.";
         }
         catch (Exception ex)
         {
             _log.Error("hid", "stop failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -121,15 +121,15 @@ public partial class HidVm : ObservableObject
             };
             await File.WriteAllTextAsync(path, string.Join(Environment.NewLine, lines) + Environment.NewLine);
             ScriptPath = path;
-            Log("sample written -> " + path);
+            Log("exemple écrit -> " + path);
             _log.Info("hid", "safe sample script written: " + path);
             await InspectAsync();
-            Status = "Sample script created: " + path;
+            Status = "Exemple de script créé : " + path;
         }
         catch (Exception ex)
         {
             _log.Error("hid", "sample write failed", ex);
-            Status = "Error: " + ex.Message;
+            Status = "Erreur : " + ex.Message;
         }
     }
 
@@ -139,14 +139,14 @@ public partial class HidVm : ObservableObject
         try
         {
             var info = await _hid.ParseAsync(ScriptPath);
-            ScriptSummary = $"{info.Lines} lines | {info.StringChars} string chars | estimated duration {Fmt(info.Estimated)}";
-            Status = "Script parsed: " + info.Name;
+            ScriptSummary = $"{info.Lines} lignes | {info.StringChars} caractères de texte | durée estimée {Fmt(info.Estimated)}";
+            Status = "Script analysé : " + info.Name;
         }
         catch (Exception ex)
         {
             _log.Error("hid", "parse failed", ex);
-            ScriptSummary = "Could not parse script.";
-            Status = "Error: " + ex.Message;
+            ScriptSummary = "Impossible d'analyser le script.";
+            Status = "Erreur : " + ex.Message;
         }
     }
 

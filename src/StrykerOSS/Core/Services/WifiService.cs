@@ -38,15 +38,15 @@ public sealed class WifiService : IWifiService
     private const uint ClientVersion = 2;
 
     private static readonly string[] InterfaceStates =
-        { "not ready", "connected", "disconnected", "authenticating", "associating", "discovering", "disconnecting" };
+        { "non prêt", "connecté", "déconnecté", "authentification", "association", "détection", "déconnexion" };
 
     private static string StateName(uint state)
-        => state < (uint)InterfaceStates.Length ? InterfaceStates[state] : $"state {state}";
+        => state < (uint)InterfaceStates.Length ? InterfaceStates[state] : $"état {state}";
 
     private static void Throw(uint rc, string op)
     {
         if (rc != 0)
-            throw new InvalidOperationException($"{op} failed with Win32 error {rc}.");
+            throw new InvalidOperationException($"{op} a échoué (erreur Win32 {rc}).");
     }
 
     private static IntPtr OpenHandle()
@@ -54,7 +54,9 @@ public sealed class WifiService : IWifiService
         uint rc = WlanOpenHandle(ClientVersion, IntPtr.Zero, out _, out IntPtr h);
         if (rc != 0)
             throw new InvalidOperationException(
-                $"WlanOpenHandle failed (Win32 error {rc}) - is the WLAN AutoConfig service (WlanSvc) running?");
+                $"Impossible d'ouvrir le service Wi-Fi natif (erreur Win32 {rc}). " +
+                "Vérifiez que le service « Configuration automatique WLAN » (WlanSvc) est démarré " +
+                "et qu'un adaptateur Wi-Fi est présent sur cette machine.");
         return h;
     }
 
@@ -149,8 +151,13 @@ public sealed class WifiService : IWifiService
     {
         public uint dwTotalSize;
         public uint dwNumberOfItems;
-        public uint dwIndex;
-        public IntPtr wlanBssEntries; // native inline array starts here (x64)
+        // CRITIQUE : contrairement à WLAN_INTERFACE_INFO_LIST et
+        // WLAN_AVAILABLE_NETWORK_LIST, la structure native WLAN_BSS_LIST n'a PAS de
+        // champ dwIndex : { DWORD dwTotalSize; DWORD dwNumberOfItems; entries[] }.
+        // Un champ fantôme décale le IntPtr de 8 octets : la valeur lue devient un
+        // pointeur sauvage (des octets du SSID) et Marshal.PtrToStructure déclenche
+        // une AccessViolationException (non rattrapable en .NET 8) qui tue le process.
+        public IntPtr wlanBssEntries; // le tableau natif inline commence ici (offset 8)
     }
 
     // Native: { DWORD count; DWORD index; WLAN_PROFILE_INFO items[1]; }
@@ -252,7 +259,7 @@ public sealed class WifiService : IWifiService
     public async Task<bool> ConnectAsync(WifiConnectRequest req, CancellationToken ct = default)
     {
         if (req is null || string.IsNullOrWhiteSpace(req.Ssid))
-            throw new ArgumentException("SSID is required.", nameof(req));
+            throw new ArgumentException("Le SSID est obligatoire.", nameof(req));
         return await Task.Run(() => ConnectCoreAsync(req, ct), ct);
     }
 
@@ -365,7 +372,7 @@ public sealed class WifiService : IWifiService
             var ifaces = EnumInterfaces(h);
             if (ifaces.Count == 0)
             {
-                log?.Report("No Wi-Fi interfaces present on this machine.");
+                log?.Report("Aucune interface Wi-Fi présente sur cette machine.");
                 return new List<WifiNetwork>();
             }
 
@@ -374,7 +381,7 @@ public sealed class WifiService : IWifiService
                 ct.ThrowIfCancellationRequested();
                 var g = ifc.InterfaceGuid;
                 uint rc = WlanScan(h, ref g, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-                log?.Report($"WlanScan '{ifc.InterfaceDescription}' -> rc={rc}");
+                log?.Report($"WlanScan '{ifc.InterfaceDescription}' -> code {rc}");
             }
 
             // scans populate the OS lists asynchronously - give them a moment
@@ -390,7 +397,7 @@ public sealed class WifiService : IWifiService
                 ct.ThrowIfCancellationRequested();
                 var g = ifc.InterfaceGuid;
                 var bss = ReadBssMap(h, g);
-                log?.Report($"Interface '{ifc.InterfaceDescription}': {bss.Count} BSS entr(ies) decoded.");
+                log?.Report($"Interface '{ifc.InterfaceDescription}' : {bss.Count} BSS décodés.");
 
                 foreach (var n in ReadAvailableNetworks(h, g))
                 {
@@ -405,7 +412,7 @@ public sealed class WifiService : IWifiService
             }
 
             var list = merged.Values.OrderByDescending(n => n.SignalPercent).ToList();
-            log?.Report($"Merged {list.Count} unique SSID(s) (hidden networks show as <hidden>).");
+            log?.Report($"{list.Count} SSID unique(s) fusionné(s) (les réseaux masqués s'affichent <masqué>).");
             return list;
         }
         finally { WlanCloseHandle(h, IntPtr.Zero); }
@@ -432,12 +439,14 @@ public sealed class WifiService : IWifiService
     }
 
     /// <summary>
-    /// Parses WlanGetNetworkBssList into SSID -> (strongest BSSID, RSSI, frequency).
-    /// The native BSS list stores variable-length entries; the walk below validates
-    /// each header (SSID length, RSSI range, link quality, BSS type, channel band,
-    /// non-zero BSSID) before trusting it, and stops at the end of the buffer, so a
-    /// driver reporting an unexpected layout can only ever degrade the enrichment
-    /// (BSSID/channel) - never the authoritative data from the available-network list.
+    /// Analyse WlanGetNetworkBssList en SSID -> (BSSID le plus fort, RSSI, fréquence).
+    /// La liste native contient des entrées à taille variable ; la marche ci-dessous
+    /// part de la VRAIE base du tableau (offset 8 de la liste), valide chaque en-tête
+    /// (longueur SSID, plage RSSI, qualité lien, type BSS, bande de canal, BSSID
+    /// non nul) avant de s'en servir, et s'arrête à la fin du tampon signalé par
+    /// dwTotalSize. Un pilote au format inattendu ne peut donc que dégrader
+    /// l'enrichissement (BSSID/canal) - jamais les données faisant autorité de la
+    /// liste des réseaux disponibles - et jamais faire planter le processus.
     /// </summary>
     private Dictionary<string, (string Bssid, int Rssi, uint Freq)> ReadBssMap(IntPtr h, Guid g)
     {
@@ -447,17 +456,21 @@ public sealed class WifiService : IWifiService
         try
         {
             var list = Marshal.PtrToStructure<WLAN_BSS_LIST>(ptr);
-            int n = list.dwNumberOfItems > int.MaxValue ? int.MaxValue : (int)list.dwNumberOfItems;
+            int n = list.dwNumberOfItems > 4096 ? 4096 : (int)list.dwNumberOfItems;
             if (n <= 0 || list.wlanBssEntries == IntPtr.Zero) return map;
 
-            int headerSize = Marshal.SizeOf<WLAN_BSS_ENTRY>(); // 360 on x64
-            long total = list.dwTotalSize >= headerSize && list.dwTotalSize < (1 << 24) ? list.dwTotalSize : (long)headerSize * n;
+            int stride = Marshal.SizeOf<WLAN_BSS_ENTRY>(); // 360 sur x64
 
-            int offset = 0;
+            // budget = octets utilisables après l'en-tête de 8 octets de la liste
+            long budget = list.dwTotalSize >= (uint)stride && list.dwTotalSize < (1 << 24)
+                ? (long)list.dwTotalSize - 8
+                : (long)stride * n;
+
+            long offset = 0;
             for (int i = 0; i < n; i++)
             {
-                if (offset + headerSize > total) break;
-                var e = Marshal.PtrToStructure<WLAN_BSS_ENTRY>(list.wlanBssEntries + offset);
+                if (offset + stride > budget) break;
+                var e = Marshal.PtrToStructure<WLAN_BSS_ENTRY>(list.wlanBssEntries + (int)offset);
 
                 if (IsValidBss(e))
                 {
@@ -466,17 +479,21 @@ public sealed class WifiService : IWifiService
                         map[key] = (FormatMac(e.dot11Bssid), e.lRssi, e.ulChCenterFrequency);
                 }
 
-                // advance past the fixed part plus this entry's inline IE blob
-                int advance = e.ulIeOffset > 0 && e.ulIeOffset <= (1 << 16) ? (int)e.ulIeOffset : headerSize;
-                advance += e.ulIeSize <= (1 << 16) ? (int)e.ulIeSize : 0;
-                if (advance < headerSize) break;
+                // avancer de la taille réelle de l'entrée : partie fixe + blob IE inline
+                // (ulIeOffset est relatif au début de CETTE entrée selon wlanapi.h)
+                long advance = stride;
+                if (e.ulIeOffset >= (uint)stride && e.ulIeOffset <= (1 << 16) && e.ulIeSize <= (1 << 16))
+                {
+                    long next = (long)e.ulIeOffset + e.ulIeSize;
+                    if (next >= stride && next <= (1 << 16)) advance = next;
+                }
                 offset += advance;
             }
             return map;
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
         {
-            return new Dictionary<string, (string Bssid, int Rssi, uint Freq)>(); // enrichment is optional
+            return new Dictionary<string, (string Bssid, int Rssi, uint Freq)>(); // l'enrichissement est optionnel
         }
         finally { WlanFreeMemory(ptr); }
     }
@@ -501,13 +518,13 @@ public sealed class WifiService : IWifiService
         {
             var ifaces = EnumInterfaces(h);
             if (ifaces.Count == 0)
-                throw new InvalidOperationException("No Wi-Fi interface available to connect with.");
+                throw new InvalidOperationException("Aucune interface Wi-Fi disponible pour établir la connexion.");
             var g = ifaces[0].InterfaceGuid;
 
             string xml = BuildProfileXml(req.Ssid, req.Password, req.Auth);
             uint rc = WlanSetProfile(h, ref g, 0 /* all-user profile */, xml, null, true, IntPtr.Zero, out uint reason);
             if (rc != 0)
-                throw new InvalidOperationException($"WlanSetProfile failed (Win32 error {rc}, reason 0x{reason:X}).");
+                throw new InvalidOperationException($"WlanSetProfile a échoué (erreur Win32 {rc}, raison 0x{reason:X}).");
 
             var p = new WLAN_CONNECTION_PARAMETERS
             {

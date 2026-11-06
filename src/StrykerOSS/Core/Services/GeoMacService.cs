@@ -47,7 +47,7 @@ public sealed class GeoMacService : IGeoMacService
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            _log.Error("geomac", $"IP lookup failed for {ip}", ex);
+            _log.Error("geomac", $"Échec de la localisation IP pour {ip}", ex);
             return null;
         }
     }
@@ -66,7 +66,7 @@ public sealed class GeoMacService : IGeoMacService
         }
         catch (Exception ex)
         {
-            _log.Error("geomac", "public IP query failed", ex);
+            _log.Error("geomac", "échec de la requête d'IP publique", ex);
             return null;
         }
     }
@@ -78,8 +78,8 @@ public sealed class GeoMacService : IGeoMacService
             new XDeclaration("1.0", "UTF-8", null),
             new XElement(ns + "kml",
                 new XElement(ns + "Document",
-                    new XElement(ns + "name", "StrykerOSS GeoMac export"),
-                    new XElement(ns + "description", "Geo points exported by StrykerOSS (educational)."),
+                    new XElement(ns + "name", "Export GeoMac StrykerOSS"),
+                    new XElement(ns + "description", "Points géolocalisés exportés par StrykerOSS (usage éducatif)."),
                     pts.Where(p => p.Lat.HasValue && p.Lon.HasValue).Select(p =>
                         new XElement(ns + "Placemark",
                             new XElement(ns + "name", p.Label),
@@ -92,7 +92,7 @@ public sealed class GeoMacService : IGeoMacService
         var dir = Path.GetDirectoryName(full);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
         doc.Save(full);
-        _log.Info("geomac", $"KML exported: {full} ({pts.Count(p => p.Lat.HasValue && p.Lon.HasValue)} placemarks)");
+        _log.Info("geomac", $"KML exporté : {full} ({pts.Count(p => p.Lat.HasValue && p.Lon.HasValue)} repères)");
         return Task.FromResult(full);
     }
 
@@ -115,7 +115,7 @@ public sealed class GeoMacService : IGeoMacService
         var dir = Path.GetDirectoryName(full);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
         File.WriteAllText(full, sb.ToString(), Encoding.UTF8);
-        _log.Info("geomac", $"CSV exported: {full}");
+        _log.Info("geomac", $"CSV exporté : {full}");
         return Task.FromResult(full);
     }
 
@@ -136,7 +136,7 @@ public sealed class GeoMacService : IGeoMacService
         }
         if (headers == null)
         {
-            log?.Report("No WiGLE CSV header (MAC column) found - file skipped.");
+            log?.Report("Aucun en-tête CSV WiGLE (colonne MAC) trouvé - fichier ignoré.");
             return Task.FromResult(result);
         }
 
@@ -147,7 +147,7 @@ public sealed class GeoMacService : IGeoMacService
         int ixFirstSeen = headers.FindIndex(h => h.Equals("FirstSeen", StringComparison.OrdinalIgnoreCase)); // mapped, Added uses import time
         if (ixMac < 0 || ixLat < 0 || ixLon < 0)
         {
-            log?.Report("WiGLE CSV is missing required MAC/CurrentLatitude/CurrentLongitude columns.");
+            log?.Report("Le CSV WiGLE ne contient pas les colonnes requises MAC/CurrentLatitude/CurrentLongitude.");
             return Task.FromResult(result);
         }
         int maxIdx = new[] { ixMac, ixSsid, ixLat, ixLon, ixFirstSeen }.Max();
@@ -167,8 +167,8 @@ public sealed class GeoMacService : IGeoMacService
             result.Add(new GeoPoint(0, "wigle", ssid.Length > 0 ? ssid : mac, mac, mac, lat, lon, DateTime.Now));
         }
 
-        log?.Report($"Parsed {result.Count} WiGLE point(s) from {Path.GetFileName(path)}.");
-        _log.Info("geomac", $"WiGLE import {path}: {result.Count} points");
+        log?.Report($"{result.Count} point(s) WiGLE analysé(s) depuis {Path.GetFileName(path)}.");
+        _log.Info("geomac", $"import WiGLE {path} : {result.Count} points");
         return Task.FromResult(result);
     }
 

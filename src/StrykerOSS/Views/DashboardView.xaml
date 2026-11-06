@@ -10,8 +10,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
-            <TextBlock Text="Dashboard" Style="{StaticResource H1}"/>
-            <TextBlock Text="Mission control - every module writes real results into the local SQLite store." Style="{StaticResource Caption}"/>
+            <TextBlock Text="Tableau de bord" Style="{StaticResource H1}"/>
+            <TextBlock Text="Centre de contrôle — chaque module écrit de vrais résultats dans la base SQLite locale." Style="{StaticResource Caption}"/>
         </StackPanel>
 
         <!-- busy bar -->
@@ -39,7 +39,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Welcome back" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
+                            <TextBlock Text="Bon retour" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
                             <TextBlock Text="{Binding AdminLine}" Style="{StaticResource Caption}" Margin="0,4,0,0"/>
                             <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
                         </StackPanel>
@@ -54,7 +54,7 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <TextBlock Text="ELEVATED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                <TextBlock Text="ÉLEVÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                             </Border>
                             <Border>
                                 <Border.Style>
@@ -67,7 +67,7 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <TextBlock Text="NOT ELEVATED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                <TextBlock Text="NON ÉLEVÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                             </Border>
                         </StackPanel>
                     </Grid>
@@ -76,7 +76,7 @@
                 <!-- stats grid 2x4 -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="OVERVIEW" Style="{StaticResource Section}"/>
+                        <TextBlock Text="VUE D'ENSEMBLE" Style="{StaticResource Section}"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -93,28 +93,28 @@
                                 <StackPanel>
                                     <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{StaticResource Accent2Brush}"/>
                                     <TextBlock Text="{Binding ScansCount}" FontSize="30" FontWeight="Bold" Margin="0,6,0,0"/>
-                                    <TextBlock Text="Scans" Style="{StaticResource Caption}"/>
+                                    <TextBlock Text="Analyses" Style="{StaticResource Caption}"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource Card2Brush}" CornerRadius="10" Padding="14" Margin="0,0,8,8">
                                 <StackPanel>
                                     <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{StaticResource Accent2Brush}"/>
                                     <TextBlock Text="{Binding FindingsCount}" FontSize="30" FontWeight="Bold" Margin="0,6,0,0"/>
-                                    <TextBlock Text="Findings" Style="{StaticResource Caption}"/>
+                                    <TextBlock Text="Constats" Style="{StaticResource Caption}"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="0" Grid.Column="2" Background="{StaticResource Card2Brush}" CornerRadius="10" Padding="14" Margin="0,0,8,8">
                                 <StackPanel>
                                     <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{StaticResource DangerBrush}"/>
                                     <TextBlock Text="{Binding CriticalCount}" FontSize="30" FontWeight="Bold" Margin="0,6,0,0" Foreground="{StaticResource DangerBrush}"/>
-                                    <TextBlock Text="Critical" Style="{StaticResource Caption}"/>
+                                    <TextBlock Text="Critiques" Style="{StaticResource Caption}"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="0" Grid.Column="3" Background="{StaticResource Card2Brush}" CornerRadius="10" Padding="14" Margin="0,0,0,8">
                                 <StackPanel>
                                     <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{StaticResource Accent2Brush}"/>
                                     <TextBlock Text="{Binding ReportsCount}" FontSize="30" FontWeight="Bold" Margin="0,6,0,0"/>
-                                    <TextBlock Text="Reports" Style="{StaticResource Caption}"/>
+                                    <TextBlock Text="Rapports" Style="{StaticResource Caption}"/>
                                 </StackPanel>
                             </Border>
 
@@ -136,14 +136,14 @@
                                 <StackPanel>
                                     <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{StaticResource Accent2Brush}"/>
                                     <TextBlock Text="{Binding TemplatesCount}" FontSize="30" FontWeight="Bold" Margin="0,6,0,0"/>
-                                    <TextBlock Text="Templates" Style="{StaticResource Caption}"/>
+                                    <TextBlock Text="Modèles" Style="{StaticResource Caption}"/>
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="1" Grid.Column="3" Background="{StaticResource Card2Brush}" CornerRadius="10" Padding="14" Margin="0,0,0,0">
                                 <StackPanel>
                                     <TextBlock Text="&#xE739;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{StaticResource Accent2Brush}"/>
                                     <TextBlock Text="{Binding GeoPointsCount}" FontSize="30" FontWeight="Bold" Margin="0,6,0,0"/>
-                                    <TextBlock Text="GeoPoints" Style="{StaticResource Caption}"/>
+                                    <TextBlock Text="Points géo" Style="{StaticResource Caption}"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -153,13 +153,13 @@
                 <!-- quick actions -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="QUICK ACTIONS" Style="{StaticResource Section}"/>
+                        <TextBlock Text="ACTIONS RAPIDES" Style="{StaticResource Section}"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Wi-Fi scan" Style="{StaticResource BtnPrimary}" Command="{Binding OpenWifiCommand}" Margin="0,0,8,0"/>
-                            <Button Content="Discover LAN" Style="{StaticResource BtnPrimary}" Command="{Binding OpenLanCommand}" Margin="0,0,8,0"/>
+                            <Button Content="Analyse Wi-Fi" Style="{StaticResource BtnPrimary}" Command="{Binding OpenWifiCommand}" Margin="0,0,8,0"/>
+                            <Button Content="Découvrir le réseau local" Style="{StaticResource BtnPrimary}" Command="{Binding OpenLanCommand}" Margin="0,0,8,0"/>
                             <Button Content="Nmap" Style="{StaticResource BtnPrimary}" Command="{Binding OpenNmapCommand}" Margin="0,0,8,0"/>
-                            <Button Content="Web scan" Style="{StaticResource BtnPrimary}" Command="{Binding OpenNucleiCommand}" Margin="0,0,8,0"/>
-                            <Button Content="New project" Style="{StaticResource BtnGhost}" Command="{Binding OpenProjectsCommand}"/>
+                            <Button Content="Analyse web" Style="{StaticResource BtnPrimary}" Command="{Binding OpenNucleiCommand}" Margin="0,0,8,0"/>
+                            <Button Content="Nouveau projet" Style="{StaticResource BtnGhost}" Command="{Binding OpenProjectsCommand}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -172,11 +172,11 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="RECENT SCANS" Style="{StaticResource Section}" Margin="0" VerticalAlignment="Center"/>
-                            <Button Grid.Column="1" Content="Refresh" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
+                            <TextBlock Text="ANALYSES RÉCENTES" Style="{StaticResource Section}" Margin="0" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="Actualiser" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
                         </Grid>
                         <StackPanel>
-                            <TextBlock Text="No scans recorded yet - run a scan from Wi-Fi, LAN, Nmap or the Web scanner module."
+                            <TextBlock Text="Aucune analyse enregistrée pour le moment — lancez une analyse depuis Wi-Fi, Réseau local, Nmap ou le scanner web."
                                        Margin="0,0,0,8">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource Caption}">
@@ -213,7 +213,7 @@
 
                 <!-- educational footer -->
                 <TextBlock Style="{StaticResource Caption}" Margin="4,2,0,6"
-                           Text="Educational platform - Windows port of zalexdev/strykerapp (GPL-3.0). Use only against networks and systems you are authorized to test. All data stays on this machine."/>
+                           Text="Plateforme éducative — portage Windows de zalexdev/strykerapp (GPL-3.0). À utiliser uniquement contre des réseaux et systèmes que vous êtes autorisé à tester. Toutes les données restent sur cette machine."/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

@@ -32,7 +32,7 @@ public sealed class UsbService : IUsbService
                 var volume = Str(el, "VolumeName");
                 result.Add(new UsbDeviceInfo(
                     PnpId: $"VOLUME:{letter}",
-                    Name: string.IsNullOrWhiteSpace(volume) ? "Removable drive" : volume,
+                    Name: string.IsNullOrWhiteSpace(volume) ? "Lecteur amovible" : volume,
                     Manufacturer: null,
                     Class: "Disk",
                     IsStorage: true,
@@ -79,7 +79,7 @@ public sealed class UsbService : IUsbService
     {
         if (string.IsNullOrWhiteSpace(isoPath) || !File.Exists(isoPath))
         {
-            log?.Report($"ISO not found: {isoPath}");
+            log?.Report($"ISO introuvable : {isoPath}");
             _log.Warn("usb", $"ISO mount failed - file not found: {isoPath}");
             return false;
         }
@@ -87,19 +87,19 @@ public sealed class UsbService : IUsbService
         var escaped = isoPath.Replace("'", "''"); // single quotes doubled for PS string literal
         var script = "$ErrorActionPreference='Stop'; $r = Mount-DiskImage -ImagePath '" + escaped + "' -PassThru; ($r | Get-Volume).DriveLetter";
 
-        log?.Report($"Mounting '{Path.GetFileName(isoPath)}' via Mount-DiskImage ...");
+        log?.Report($"Montage de '{Path.GetFileName(isoPath)}' via Mount-DiskImage ...");
         var (code, @out, err) = await RunPowerShellAsync(script, 60);
         var letter = (@out ?? string.Empty).Trim();
 
         if (code == 0 && letter.Length > 0)
         {
-            log?.Report($"Mounted '{Path.GetFileName(isoPath)}' as drive {letter}:");
+            log?.Report($"'{Path.GetFileName(isoPath)}' monté en tant que lecteur {letter}:");
             _log.Info("usb", $"mounted ISO '{isoPath}' -> {letter}:");
             return true;
         }
 
-        var msg = string.IsNullOrWhiteSpace(err) ? "no drive letter returned (image may be corrupt or already mounted)" : err.Trim();
-        log?.Report($"Mount failed: {msg}");
+        var msg = string.IsNullOrWhiteSpace(err) ? "aucune lettre de lecteur retournée (l'image est peut-être corrompue ou déjà montée)" : err.Trim();
+        log?.Report($"Échec du montage : {msg}");
         _log.Error("usb", $"ISO mount failed for '{isoPath}': {msg}");
         return false;
     }
@@ -109,7 +109,7 @@ public sealed class UsbService : IUsbService
         var dl = (driveLetter ?? string.Empty).Trim().TrimEnd('\\', ':', ' ');
         if (dl.Length != 1 || !char.IsLetter(dl[0]))
         {
-            log?.Report($"Invalid drive letter: '{driveLetter}'");
+            log?.Report($"Lettre de lecteur invalide : '{driveLetter}'");
             _log.Warn("usb", $"eject rejected - invalid drive letter '{driveLetter}'");
             return false;
         }
@@ -117,11 +117,11 @@ public sealed class UsbService : IUsbService
         // Shell.Application InvokeVerb('Eject') is the same verb Explorer uses for
         // "Eject" on removable drives; it is asynchronous and has no exit code.
         var script = "(New-Object -ComObject Shell.Application).NameSpace(17).ParseName('" + dl + ":\\').InvokeVerb('Eject')";
-        log?.Report($"Sending Eject verb to {dl}: (Shell.Application COM) ...");
+        log?.Report($"Envoi du verbe d'éjection à {dl}: (Shell.Application COM) ...");
         var (code, @out, err) = await RunPowerShellAsync(script, 30);
 
         var stderr = string.IsNullOrWhiteSpace(err) ? string.Empty : $", stderr: {err.Trim()}";
-        log?.Report($"Eject request sent for {dl}: - the COM verb is asynchronous, verify in Explorer that the drive disappeared before unplugging.");
+        log?.Report($"Demande d'éjection envoyée pour {dl}: - le verbe COM est asynchrone, vérifiez dans l'Explorateur que le lecteur a disparu avant de le débrancher.");
         _log.Info("usb", $"eject verb sent for {dl}: (powershell exit {code}{stderr})");
         return true;
     }
@@ -144,7 +144,7 @@ public sealed class UsbService : IUsbService
             StandardErrorEncoding = Encoding.UTF8
         };
 
-        using var p = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start powershell.exe.");
+        using var p = Process.Start(psi) ?? throw new InvalidOperationException("Échec du démarrage de powershell.exe.");
         var outTask = p.StandardOutput.ReadToEndAsync();
         var errTask = p.StandardError.ReadToEndAsync();
 
@@ -157,7 +157,7 @@ public sealed class UsbService : IUsbService
         catch (OperationCanceledException)
         {
             try { if (!p.HasExited) p.Kill(true); } catch { }
-            return (-1, await outTask, "powershell timed out");
+            return (-1, await outTask, "délai d'attente dépassé pour powershell");
         }
 
         return (p.ExitCode, await outTask, await errTask);

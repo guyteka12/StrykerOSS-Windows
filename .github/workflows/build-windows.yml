@@ -37,7 +37,7 @@ jobs:
           if (-not (Test-Path $iscc)) {
             choco install innosetup -y --no-progress
           }
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer/StrykerOSS.iss /DAppVersion=1.0.0
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer/StrykerOSS.iss /DAppVersion=1.1.0
           Get-ChildItem installer/Output
 
       - name: Upload artifacts
@@ -46,7 +46,7 @@ jobs:
           name: StrykerOSS-windows
           path: |
             StrykerOSS-portable.exe
-            installer/Output/StrykerOSS-Setup-1.0.0.exe
+            installer/Output/StrykerOSS-Setup-1.1.0.exe
           if-no-files-found: error
 
       - name: Create release (tags only)
@@ -55,4 +55,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$env:GITHUB_REF_NAME" --title "StrykerOSS $env:GITHUB_REF_NAME" --notes "StrykerOSS Windows build (educational use only). Portable exe + installer." StrykerOSS-portable.exe installer/Output/StrykerOSS-Setup-1.0.0.exe
+          gh release create "$env:GITHUB_REF_NAME" --title "StrykerOSS $env:GITHUB_REF_NAME" --notes "Build Windows de StrykerOSS (usage educatif uniquement). Exe portable + installeur." StrykerOSS-portable.exe installer/Output/StrykerOSS-Setup-1.1.0.exe

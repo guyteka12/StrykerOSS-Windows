@@ -13,8 +13,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Settings" Style="{StaticResource H1}"/>
-            <TextBlock Text="Tool paths, Metasploit RPC, author signature and system info - stored in %LOCALAPPDATA%\StrykerOSS\settings.json."
+            <TextBlock Text="Paramètres" Style="{StaticResource H1}"/>
+            <TextBlock Text="Chemins des outils, RPC Metasploit, signature de l'auteur et infos système - stockés dans %LOCALAPPDATA%\StrykerOSS\settings.json."
                        Style="{StaticResource Caption}"/>
         </StackPanel>
 
@@ -28,7 +28,7 @@
             <StackPanel Grid.Column="0">
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="TOOL PATHS" Style="{StaticResource Section}"/>
+                        <TextBlock Text="CHEMINS DES OUTILS" Style="{StaticResource Section}"/>
 
                         <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
@@ -39,7 +39,7 @@
                             <TextBlock Grid.Column="0" Text="Nmap" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}"
                                      Text="{Binding NmapPath, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Grid.Column="2" Content="Browse..." Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            <Button Grid.Column="2" Content="Parcourir..." Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                                     Command="{Binding BrowsePathCommand}" CommandParameter="nmap"/>
                         </Grid>
 
@@ -52,7 +52,7 @@
                             <TextBlock Grid.Column="0" Text="Nuclei" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}"
                                      Text="{Binding NucleiPath, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Grid.Column="2" Content="Browse..." Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            <Button Grid.Column="2" Content="Parcourir..." Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                                     Command="{Binding BrowsePathCommand}" CommandParameter="nuclei"/>
                         </Grid>
 
@@ -65,13 +65,13 @@
                             <TextBlock Grid.Column="0" Text="MsfVenom" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}"
                                      Text="{Binding MsfPath, UpdateSourceTrigger=PropertyChanged}"/>
-                            <Button Grid.Column="2" Content="Browse..." Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            <Button Grid.Column="2" Content="Parcourir..." Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
                                     Command="{Binding BrowsePathCommand}" CommandParameter="msf"/>
                         </Grid>
 
-                        <Button Content="Auto-detect all" Style="{StaticResource BtnGhost}" HorizontalAlignment="Left"
+                        <Button Content="Tout détecter automatiquement" Style="{StaticResource BtnGhost}" HorizontalAlignment="Left"
                                 Command="{Binding AutoDetectCommand}"/>
-                        <TextBlock Text="Auto-detect scans Settings paths, the tools dir, PATH and common install locations."
+                        <TextBlock Text="La détection automatique analyse les chemins des Paramètres, le dossier des outils, le PATH et les emplacements d'installation courants."
                                    Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
@@ -86,7 +86,7 @@
                                 <ColumnDefinition Width="140"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Host" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="Hôte" Style="{StaticResource Caption}"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding MsfRpcHost, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
@@ -101,24 +101,24 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="User" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="Utilisateur" Style="{StaticResource Caption}"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding MsfRpcUser, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Password" Style="{StaticResource Caption}"/>
+                                <TextBlock Text="Mot de passe" Style="{StaticResource Caption}"/>
                                 <TextBox Style="{StaticResource InputBox}" Text="{Binding MsfRpcPass, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </Grid>
-                        <TextBlock Text="Used by the Metasploit module (msfrpcd -P &lt;pass&gt; -S -p 55553 -a 127.0.0.1)."
+                        <TextBlock Text="Utilisé par le module Metasploit (msfrpcd -P &lt;pass&gt; -S -p 55553 -a 127.0.0.1)."
                                    Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="REPORT AUTHOR" Style="{StaticResource Section}"/>
+                        <TextBlock Text="AUTEUR DES RAPPORTS" Style="{StaticResource Section}"/>
                         <TextBox Style="{StaticResource InputBox}" Text="{Binding DefaultAuthor, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock Text="Signature written into generated reports." Style="{StaticResource Caption}" Margin="0,8,0,0"/>
+                        <TextBlock Text="Signature inscrite dans les rapports générés." Style="{StaticResource Caption}" Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -127,11 +127,11 @@
             <StackPanel Grid.Column="1">
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="SYSTEM" Style="{StaticResource Section}"/>
+                        <TextBlock Text="SYSTÈME" Style="{StaticResource Section}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                             <Border Style="{StaticResource BadgeSuccess}"
                                     Visibility="{Binding IsElevated, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="ADMIN / ELEVATED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                <TextBlock Text="ADMIN / ÉLEVÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                             </Border>
                             <Border>
                                 <Border.Style>
@@ -143,23 +143,23 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <TextBlock Text="WARNING — NOT ELEVATED" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                <TextBlock Text="ATTENTION — NON ÉLEVÉ" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="{Binding WindowsVersion, StringFormat='OS: {0}'}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding MachineName, StringFormat='Machine: {0}'}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding CurrentUser, StringFormat='User: {0}'}" Style="{StaticResource Caption}"/>
+                        <TextBlock Text="{Binding WindowsVersion, StringFormat='OS : {0}'}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding MachineName, StringFormat='Machine : {0}'}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding CurrentUser, StringFormat='Utilisateur : {0}'}" Style="{StaticResource Caption}"/>
                     </StackPanel>
                 </Border>
 
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="DATA" Style="{StaticResource Section}"/>
-                        <TextBlock Text="{Binding DataDir, StringFormat='Data dir: {0}'}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding ToolsDir, StringFormat='Tools dir: {0}'}" Style="{StaticResource Caption}" Margin="0,0,10,0"/>
+                        <TextBlock Text="DONNÉES" Style="{StaticResource Section}"/>
+                        <TextBlock Text="{Binding DataDir, StringFormat='Dossier de données : {0}'}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding ToolsDir, StringFormat='Dossier des outils : {0}'}" Style="{StaticResource Caption}" Margin="0,0,10,0"/>
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button Content="Open data folder" Style="{StaticResource BtnGhost}" Command="{Binding OpenDataFolderCommand}"/>
-                            <Button Content="Save" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0" Command="{Binding SaveCommand}"/>
+                            <Button Content="Ouvrir le dossier de données" Style="{StaticResource BtnGhost}" Command="{Binding OpenDataFolderCommand}"/>
+                            <Button Content="Enregistrer" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0" Command="{Binding SaveCommand}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,10,0,0"/>
                     </StackPanel>

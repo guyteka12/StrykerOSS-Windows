@@ -12,8 +12,8 @@
 
         <!-- page header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,14">
-            <TextBlock Text="Nmap Scanner" Style="{StaticResource H1}"/>
-            <TextBlock Text="Runs the real nmap.exe binary with live output streaming, real XML parsing and HTML report export." Style="{StaticResource Caption}"/>
+            <TextBlock Text="Scanner Nmap" Style="{StaticResource H1}"/>
+            <TextBlock Text="Exécute le véritable binaire nmap.exe avec sortie diffusée en direct, analyse XML réelle et export de rapport HTML." Style="{StaticResource Caption}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -41,11 +41,11 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="230"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Target" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="0" Text="Cible" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" Margin="0,0,12,0"
                                      Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="IP, range, CIDR or hostname - e.g. 192.168.1.0/24"/>
-                            <TextBlock Grid.Column="2" Text="Profile" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                     ToolTip="IP, plage, CIDR ou nom d'hôte - ex. 192.168.1.0/24"/>
+                            <TextBlock Grid.Column="2" Text="Profil" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <ComboBox Grid.Column="3" Style="{StaticResource ComboDark}" DisplayMemberPath="Name"
                                       ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}"/>
                         </Grid>
@@ -56,13 +56,13 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Nmap flags" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="0" Text="Options Nmap" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBox Grid.Column="1" Style="{StaticResource InputBox}" Margin="0,0,12,0" FontFamily="Consolas"
                                      Text="{Binding CustomArgs, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="Full nmap arguments - prefilled from the selected profile, editable"/>
-                            <Button Grid.Column="2" Content="Run" Style="{StaticResource BtnPrimary}" Margin="0,0,10,0"
+                                     ToolTip="Arguments nmap complets - préremplis depuis le profil sélectionné, modifiables"/>
+                            <Button Grid.Column="2" Content="Lancer" Style="{StaticResource BtnPrimary}" Margin="0,0,10,0"
                                     Command="{Binding RunCommand}"/>
-                            <Button Grid.Column="3" Content="Cancel" Style="{StaticResource BtnDanger}"
+                            <Button Grid.Column="3" Content="Annuler" Style="{StaticResource BtnDanger}"
                                     Command="{Binding RunCancelCommand}"/>
                         </Grid>
                         <TextBlock Text="{Binding ProfileDescription}" Style="{StaticResource Caption}"/>
@@ -74,10 +74,10 @@
                 <!-- results card -->
                 <Border Grid.Row="1" Style="{StaticResource Card}">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="RESULTS" Style="{StaticResource Section}"/>
+                        <TextBlock DockPanel.Dock="Top" Text="RÉSULTATS" Style="{StaticResource Section}"/>
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel>
-                                <TextBlock Text="No scan results yet - run a scan." Style="{StaticResource Caption}" Margin="0,0,0,8"
+                                <TextBlock Text="Aucun résultat pour l'instant - lancez un scan." Style="{StaticResource Caption}" Margin="0,0,0,8"
                                            Visibility="{Binding ShowPlaceholder, Converter={StaticResource BoolToVis}}"/>
                                 <ItemsControl ItemsSource="{Binding Hosts}">
                                     <ItemsControl.ItemTemplate>
@@ -89,7 +89,7 @@
                                                         <TextBlock Text="{Binding HostLabel}" Style="{StaticResource Body}" FontWeight="Bold" FontFamily="Consolas"/>
                                                         <Border Style="{StaticResource BadgeSuccess}" Margin="10,0,0,0"
                                                                 Visibility="{Binding Up, Converter={StaticResource BoolToVis}}">
-                                                            <TextBlock Text="UP" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                            <TextBlock Text="ACTIF" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                         </Border>
                                                         <Border Margin="8,0,0,0">
                                                             <Border.Style>
@@ -101,7 +101,7 @@
                                                                     </Style.Triggers>
                                                                 </Style>
                                                             </Border.Style>
-                                                            <TextBlock Text="DOWN" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                            <TextBlock Text="HORS LIGNE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
                                                         </Border>
                                                     </StackPanel>
                                                     <TextBlock Text="{Binding MacLabel}" Style="{StaticResource Caption}" Margin="0,3,0,0" FontFamily="Consolas"
@@ -150,7 +150,7 @@
                 <!-- live log card -->
                 <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,12,0,0">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="LIVE OUTPUT" Style="{StaticResource Section}"/>
+                        <TextBlock DockPanel.Dock="Top" Text="SORTIE EN DIRECT" Style="{StaticResource Section}"/>
                         <ListBox Background="Transparent" BorderThickness="0"
                                  ItemsSource="{Binding LogLines}"
                                  FontFamily="Consolas" FontSize="12"
@@ -166,10 +166,10 @@
             <StackPanel Grid.Column="1">
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="OUTPUT" Style="{StaticResource Section}"/>
+                        <TextBlock Text="SORTIE" Style="{StaticResource Section}"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Export HTML" Style="{StaticResource BtnPrimary}" Command="{Binding ExportHtmlCommand}"/>
-                            <Button Content="Open raw XML" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                            <Button Content="Exporter en HTML" Style="{StaticResource BtnPrimary}" Command="{Binding ExportHtmlCommand}"/>
+                            <Button Content="Ouvrir le XML brut" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
                                     Command="{Binding OpenXmlCommand}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding LastXmlPath}" Style="{StaticResource Caption}" Margin="0,8,0,0" FontFamily="Consolas"
@@ -178,17 +178,17 @@
                 </Border>
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="PROFILES" Style="{StaticResource Section}"/>
+                        <TextBlock Text="PROFILS" Style="{StaticResource Section}"/>
                         <TextBlock Text="{Binding ProfileDescription}" Style="{StaticResource Caption}"/>
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="REMINDER" Style="{StaticResource Section}"/>
+                        <TextBlock Text="RAPPEL" Style="{StaticResource Section}"/>
                         <TextBlock Style="{StaticResource Caption}" Margin="0,0,0,6"
-                                   Text="nmap performs active scanning: version detection (-sV), OS fingerprinting (-O) and NSE scripts can be logged by the target."/>
+                                   Text="nmap effectue un scan actif : la détection de versions (-sV), l'empreinte système (-O) et les scripts NSE peuvent être journalisés par la cible."/>
                         <TextBlock Style="{StaticResource Caption}"
-                                   Text="Scan only systems you own or are explicitly authorized to test. Educational use only."/>
+                                   Text="Ne scannez que des systèmes que vous possédez ou pour lesquels vous êtes explicitement autorisé à tester. Usage éducatif uniquement."/>
                     </StackPanel>
                 </Border>
             </StackPanel>

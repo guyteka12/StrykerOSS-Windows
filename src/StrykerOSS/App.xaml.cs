@@ -9,24 +9,33 @@ public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = default!;
 
+    public App()
+    {
+        // Filet de sécurité global : AUCUNE exception ne doit fermer l'application
+        // silencieusement. Toutes les sources d'exceptions non gérées sont couvertes.
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
         var services = new ServiceCollection();
 
-        // ---- core infrastructure ----
+        // ---- infrastructure ----
         services.AddSingleton<ISettings, SettingsService>();
         services.AddSingleton<ILogger, LogService>();
         services.AddSingleton<IAdmin, AdminService>();
         services.AddSingleton<INavigation, Navigation>();
         services.AddSingleton<IToolLocator, ToolLocator>();
 
-        // ---- data & reports ----
+        // ---- données & rapports ----
         services.AddSingleton<IDbService, DbService>();
         services.AddSingleton<IReportService, ReportService>();
 
-        // ---- modules: services ----
+        // ---- modules : services ----
         services.AddSingleton<IOuiService, OuiService>();
         services.AddSingleton<IWifiService, WifiService>();
         services.AddSingleton<IMacChanger, MacChangerService>();
@@ -44,8 +53,9 @@ public partial class App : Application
         services.AddSingleton<ITerminalService, TerminalService>();
         services.AddSingleton<IUsbService, UsbService>();
         services.AddSingleton<IToolsManager, ToolsManagerService>();
+        services.AddSingleton<IProvisioning, ProvisioningService>();
 
-        // ---- view models (singletons: state survives navigation) ----
+        // ---- view models (singletons : l'état survit à la navigation) ----
         services.AddSingleton<ViewModels.MainWindowVm>();
         services.AddSingleton<ViewModels.DashboardVm>();
         services.AddSingleton<ViewModels.WifiVm>();
@@ -69,7 +79,7 @@ public partial class App : Application
         services.AddSingleton<ViewModels.LogsVm>();
         services.AddSingleton<ViewModels.SettingsVm>();
 
-        // views transient, resolved with their singleton VM
+        // vues transitoires, résolues avec leur VM singleton
         services.AddTransient<DashboardView>();
         services.AddTransient<WifiView>();
         services.AddTransient<LanView>();
@@ -96,7 +106,41 @@ public partial class App : Application
 
         Services = services.BuildServiceProvider();
 
-        // consent gate (educational / authorized testing only)
+        var log = Services.GetRequiredService<ILogger>();
+
+        // ---- base de données : vérification BLOQUANTE mais résiliente au démarrage ----
+        // Le tableau de bord dépend du schéma SQLite : on l'initialise ICI, avec
+        // réessais, et on signale clairement en français si quelque chose échoue.
+        var dbOk = false;
+        Exception? dbError = null;
+        for (int attempt = 1; attempt <= 3 && !dbOk; attempt++)
+        {
+            try
+            {
+                Services.GetRequiredService<IDbService>().InitAsync().GetAwaiter().GetResult();
+                dbOk = true;
+            }
+            catch (Exception ex)
+            {
+                dbError = ex;
+                log.Error("core", $"Initialisation de la base (tentative {attempt}/3) échouée", ex);
+                System.Threading.Thread.Sleep(400);
+            }
+        }
+        if (!dbOk)
+        {
+            MessageBox.Show(
+                "La base de données locale n'a pas pu être initialisée :\n\n" + dbError?.Message +
+                "\n\nL'application va quand même démarrer, mais les statistiques du tableau de bord et " +
+                "l'enregistrement des résultats peuvent être indisponibles.\n\n" +
+                "Journal complet : " + System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "StrykerOSS", "logs.txt"),
+                "StrykerOSS - Erreur de base de données",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        // ---- portail de consentement (usage éducatif / tests autorisés uniquement) ----
         var settings = Services.GetRequiredService<ISettings>();
         if (!settings.Value.ConsentAccepted)
         {
@@ -112,34 +156,83 @@ public partial class App : Application
             settings.Save();
         }
 
-        var log = Services.GetRequiredService<ILogger>();
-        var admin = Services.GetRequiredService<IAdmin>();
-        log.Info("core", $"StrykerOSS started - elevated={admin.IsElevated} - {admin.WindowsVersion()}");
+        log.Info("core", $"StrykerOSS démarré - admin={Services.GetRequiredService<IAdmin>().IsElevated} - {Services.GetRequiredService<IAdmin>().WindowsVersion()}");
 
-        // async init of services that need it (db schema, OUI database)
-        _ = Task.Run(async () =>
+        // ---- initialisation asynchrone des services qui en ont besoin (OUI) ----
+        _ = System.Threading.Tasks.Task.Run(async () =>
         {
             try
             {
-                await Services.GetRequiredService<IDbService>().InitAsync();
                 await Services.GetRequiredService<IOuiService>().InitializeAsync();
-                log.Info("core", "Database + OUI vendor database ready");
+                log.Info("core", "Base des fabricants (OUI) prête");
             }
             catch (Exception ex)
             {
-                log.Error("core", "Background init failed", ex);
+                log.Error("core", "Initialisation en arrière-plan échouée", ex);
             }
         });
 
         var win = new MainWindow(Services);
         MainWindow = win;
         win.Show();
+
+        // ---- assistant de première configuration : installe les outils réels ----
+        // (Nmap + Npcap, Nuclei, Hashcat, Metasploit optionnel, index Exploit-DB).
+        // Lourd mais 100 % automatique, comme demandé. Rappelable depuis
+        // l'onglet Outils -> « Relancer l'assistant d'installation ».
+        if (!settings.Value.InitialSetupDone)
+        {
+            try
+            {
+                var setup = new SetupWindow(Services);
+                setup.ShowDialog();
+                settings.Value.InitialSetupDone = true;
+                settings.Save();
+            }
+            catch (Exception ex)
+            {
+                log.Error("core", "Assistant de première configuration échoué", ex);
+                settings.Value.InitialSetupDone = true; // ne pas re-bloquer le démarrage en boucle
+                settings.Save();
+            }
+        }
     }
+
+    // ---------- filets de sécurité globaux ----------
 
     private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
-        try { Services?.GetService<ILogger>()?.Error("ui", "Unhandled exception", e.Exception); } catch { }
-        MessageBox.Show(e.Exception.Message, "StrykerOSS error", MessageBoxButton.OK, MessageBoxImage.Error);
-        e.Handled = true;
+        try { Services?.GetService<ILogger>()?.Error("ui", "Exception non gérée sur l'interface", e.Exception); } catch { }
+        MessageBox.Show(
+            "Une erreur est survenue :\n\n" + e.Exception.Message +
+            "\n\nL'application continue de fonctionner. Le détail a été consigné dans le journal (onglet Journaux).",
+            "StrykerOSS - Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+        e.Handled = true; // ne JAMAIS laisser l'application se fermer
+    }
+
+    private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var ex = e.ExceptionObject as Exception;
+        try { Services?.GetService<ILogger>()?.Error("core", "Exception non gérée (domaine d'application)", ex); } catch { }
+
+        if (e.IsTerminating)
+        {
+            try
+            {
+                MessageBox.Show(
+                    "Une erreur fatale inattendue impose la fermeture de l'application :\n\n" + ex?.Message +
+                    "\n\nSolutions : relancez l'application en tant qu'administrateur ; si le problème persiste, " +
+                    "consultez le journal (onglet Journaux) et ouvrez un ticket sur le dépôt GitHub.",
+                    "StrykerOSS - Erreur fatale", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch { /* le processus se termine de toute façon */ }
+        }
+    }
+
+    private void OnUnobservedTaskException(object? sender, System.Threading.Tasks.UnobservedTaskExceptionEventArgs e)
+    {
+        // Une tâche d'arrière-plan oubliée ne doit JAMAIS tuer le processus.
+        try { Services?.GetService<ILogger>()?.Error("core", "Tâche non observée", e.Exception?.GetBaseException()); } catch { }
+        e.SetObserved();
     }
 }

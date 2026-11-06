@@ -13,7 +13,7 @@ public sealed class UsbDeviceRow
     public UsbDeviceInfo Device { get; }
 
     public string PnpId => Device.PnpId;
-    public string Name => string.IsNullOrWhiteSpace(Device.Name) ? "(unknown device)" : Device.Name!;
+    public string Name => string.IsNullOrWhiteSpace(Device.Name) ? "(périphérique inconnu)" : Device.Name!;
     public string? Manufacturer => Device.Manufacturer;
     public string Class => Device.Class;
     public bool IsStorage => Device.IsStorage;
@@ -35,7 +35,7 @@ public sealed class UsbDeviceRow
         {
             if (!IsStorage) return Class;
             var size = string.IsNullOrEmpty(SizeText) ? "" : $" · {SizeText}";
-            return $"Removable volume · {Device.DriveLetter}{size}";
+            return $"Volume amovible · {Device.DriveLetter}{size}";
         }
     }
 }
@@ -53,7 +53,7 @@ public partial class UsbVm : ObservableObject
     public ObservableCollection<string> Log { get; } = new();
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private string _status = "Prêt";
     [ObservableProperty] private string _isoPath = "";
     [ObservableProperty] private int _storageCount;
 
@@ -61,7 +61,7 @@ public partial class UsbVm : ObservableObject
     {
         _usb = usb;
         _log = log;
-        AddLog("USB Arsenal ready - click Refresh to enumerate real devices.");
+        AddLog("Arsenal USB prêt - cliquez sur Actualiser pour énumérer les vrais périphériques.");
     }
 
     [RelayCommand]
@@ -74,7 +74,7 @@ public partial class UsbVm : ObservableObject
     private async Task LoadAsync()
     {
         IsBusy = true;
-        Status = "Enumerating USB devices (Get-PnpEntity + Win32_LogicalDisk) ...";
+        Status = "Énumération des périphériques USB (Get-PnpEntity + Win32_LogicalDisk) ...";
         try
         {
             var list = await Task.Run(() => _usb.ListUsbDevicesAsync());
@@ -85,14 +85,14 @@ public partial class UsbVm : ObservableObject
                 foreach (var r in rows) Devices.Add(r);
             });
             StorageCount = list.Count(d => d.IsStorage);
-            Status = $"{list.Count} entries ({StorageCount} removable volumes)";
+            Status = $"{list.Count} entrées ({StorageCount} volumes amovibles)";
             _log.Info("usb-ui", $"refreshed: {Status}");
         }
         catch (Exception ex)
         {
             _log.Error("usb-ui", "USB enumeration failed", ex);
-            Status = "Error: " + ex.Message;
-            AddLog($"[error] {ex.Message}");
+            Status = "Erreur : " + ex.Message;
+            AddLog($"[erreur] {ex.Message}");
         }
         finally
         {
@@ -105,14 +105,14 @@ public partial class UsbVm : ObservableObject
     {
         var dlg = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Select ISO image",
-            Filter = "ISO images (*.iso)|*.iso|All files (*.*)|*.*",
+            Title = "Sélectionner une image ISO",
+            Filter = "Images ISO (*.iso)|*.iso|Tous les fichiers (*.*)|*.*",
             CheckFileExists = true
         };
         if (dlg.ShowDialog() == true)
         {
             IsoPath = dlg.FileName;
-            AddLog($"Selected ISO: {IsoPath}");
+            AddLog($"ISO sélectionné : {IsoPath}");
         }
     }
 
@@ -126,14 +126,14 @@ public partial class UsbVm : ObservableObject
         {
             var progress = new Progress<string>(AddLog);
             ok = await Task.Run(() => _usb.MountIsoAsync(IsoPath, progress));
-            Status = ok ? "ISO mounted - new volume available." : "ISO mount failed - see log.";
+            Status = ok ? "ISO monté - nouveau volume disponible." : "Échec du montage de l'ISO - voir le journal.";
             _log.Info("usb-ui", $"mount '{IsoPath}' -> {ok}");
         }
         catch (Exception ex)
         {
             _log.Error("usb-ui", "ISO mount failed", ex);
-            Status = "Error: " + ex.Message;
-            AddLog($"[error] {ex.Message}");
+            Status = "Erreur : " + ex.Message;
+            AddLog($"[erreur] {ex.Message}");
         }
         finally
         {
@@ -152,14 +152,14 @@ public partial class UsbVm : ObservableObject
         {
             var progress = new Progress<string>(AddLog);
             var ok = await Task.Run(() => _usb.EjectDriveAsync(letter, progress));
-            Status = ok ? $"Eject requested for {letter}: - verify in Explorer." : "Eject failed - see log.";
+            Status = ok ? $"Éjection demandée pour {letter}: - vérifiez dans l'Explorateur." : "Échec de l'éjection - voir le journal.";
             _log.Info("usb-ui", $"eject {letter}: -> {ok}");
         }
         catch (Exception ex)
         {
             _log.Error("usb-ui", $"eject {letter} failed", ex);
-            Status = "Error: " + ex.Message;
-            AddLog($"[error] {ex.Message}");
+            Status = "Erreur : " + ex.Message;
+            AddLog($"[erreur] {ex.Message}");
         }
         finally
         {

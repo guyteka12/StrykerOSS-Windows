@@ -58,10 +58,10 @@ public sealed class MacChangerService : IMacChanger
 
     public async Task SaveProfileAsync(string name, string interfaceGuid, string mac)
     {
-        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Profile name is required.", nameof(name));
-        if (string.IsNullOrWhiteSpace(interfaceGuid)) throw new ArgumentException("Interface GUID is required.", nameof(interfaceGuid));
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Le nom du profil est requis.", nameof(name));
+        if (string.IsNullOrWhiteSpace(interfaceGuid)) throw new ArgumentException("Le GUID d'interface est requis.", nameof(interfaceGuid));
         string normalized = NormalizeMac(mac);
-        if (normalized.Length != 12) throw new ArgumentException("MAC must be 12 hex characters.", nameof(mac));
+        if (normalized.Length != 12) throw new ArgumentException("La MAC doit comporter 12 caractères hexadécimaux.", nameof(mac));
         await _db.SaveMacProfileAsync(new MacProfile(0, name.Trim(), interfaceGuid, normalized, DateTime.Now));
     }
 
@@ -151,33 +151,33 @@ public sealed class MacChangerService : IMacChanger
     private async Task<bool> SetMacCoreAsync(string interfaceGuid, string mac, IProgress<string>? log, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(interfaceGuid))
-            throw new ArgumentException("Interface GUID is required.", nameof(interfaceGuid));
+            throw new ArgumentException("Le GUID d'interface est requis.", nameof(interfaceGuid));
         if (!Guid.TryParse(interfaceGuid, out _))
-            throw new ArgumentException($"'{interfaceGuid}' is not a valid interface GUID.", nameof(interfaceGuid));
+            throw new ArgumentException($"'{interfaceGuid}' n'est pas un GUID d'interface valide.", nameof(interfaceGuid));
 
         string clean = NormalizeMac(mac);
         if (clean.Length != 12 || clean.Any(c => !Uri.IsHexDigit(c)))
-            throw new ArgumentException("MAC must be exactly 12 hex characters (0-9, A-F).", nameof(mac));
+            throw new ArgumentException("La MAC doit comporter exactement 12 caractères hexadécimaux (0-9, A-F).", nameof(mac));
 
         string guid = interfaceGuid.Trim('{', '}');
         string? subKey = FindClassSubKey(guid)
-            ?? throw new InvalidOperationException($"No driver class key found for interface {guid}.");
+            ?? throw new InvalidOperationException($"Aucune clé de classe de pilote trouvée pour l'interface {guid}.");
 
-        log?.Report($"Writing HKLM\\{ClassKeyPath}\\{subKey}\\NetworkAddress = {FormatHexMac(clean)}");
+        log?.Report($"Écriture de HKLM\\{ClassKeyPath}\\{subKey}\\NetworkAddress = {FormatHexMac(clean)}");
         using (var key = Registry.LocalMachine.OpenSubKey($@"{ClassKeyPath}\{subKey}", writable: true))
         {
             if (key == null)
                 throw new UnauthorizedAccessException(
-                    "Cannot open the adapter registry key for writing (Administrator rights are required).");
+                    "Impossible d'ouvrir la clé de registre de l'adaptateur en écriture (droits administrateur requis).");
             key.SetValue("NetworkAddress", clean, RegistryValueKind.String);
         }
-        log?.Report("Registry override written (REG_SZ).");
+        log?.Report("Surcharge de registre écrite (REG_SZ).");
 
         string connectionName = GetConnectionName(guid);
         bool restarted = false;
         if (!string.IsNullOrWhiteSpace(connectionName))
         {
-            log?.Report($"Restarting adapter '{connectionName}' via netsh (driver re-reads the MAC)...");
+            log?.Report($"Redémarrage de l'adaptateur '{connectionName}' via netsh (le pilote relit la MAC)...");
             RunNetsh($"interface set interface name=\"{connectionName}\" admin=disabled", log);
             await Task.Delay(1500, ct);
             RunNetsh($"interface set interface name=\"{connectionName}\" admin=enabled", log);
@@ -185,7 +185,7 @@ public sealed class MacChangerService : IMacChanger
         }
         else
         {
-            log?.Report("No NetConnectionID found - disable/enable the adapter manually (or reboot) to apply.");
+            log?.Report("Aucun NetConnectionID trouvé - désactivez/activez l'adaptateur manuellement (ou redémarrez) pour appliquer.");
         }
 
         // poll live kernel data for the new effective MAC
@@ -198,32 +198,32 @@ public sealed class MacChangerService : IMacChanger
             string current = FormatMac(nic.GetPhysicalAddress().GetAddressBytes());
             if (current.Replace(":", "").Equals(clean, StringComparison.OrdinalIgnoreCase))
             {
-                log?.Report($"Effective MAC is now {current} (confirmed by the OS).");
+                log?.Report($"La MAC effective est désormais {current} (confirmée par l'OS).");
                 return true;
             }
         }
 
         log?.Report(restarted
-            ? "Registry written and adapter restarted, but the new MAC was not confirmed within 10 s (some drivers apply on the next reboot)."
-            : "Registry written, but the adapter was not restarted - the change applies on the next disable/enable cycle.");
+            ? "Registre écrit et adaptateur redémarré, mais la nouvelle MAC n'a pas été confirmée en 10 s (certains pilotes appliquent au prochain redémarrage)."
+            : "Registre écrit, mais l'adaptateur n'a pas été redémarré - le changement s'appliquera au prochain cycle désactivation/activation.");
         return restarted;
     }
 
     private async Task RestoreCoreAsync(string interfaceGuid, IProgress<string>? log, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(interfaceGuid))
-            throw new ArgumentException("Interface GUID is required.", nameof(interfaceGuid));
+            throw new ArgumentException("Le GUID d'interface est requis.", nameof(interfaceGuid));
 
         string guid = interfaceGuid.Trim('{', '}');
         string? subKey = FindClassSubKey(guid)
-            ?? throw new InvalidOperationException($"No driver class key found for interface {guid}.");
+            ?? throw new InvalidOperationException($"Aucune clé de classe de pilote trouvée pour l'interface {guid}.");
 
         bool deleted = false;
         using (var key = Registry.LocalMachine.OpenSubKey($@"{ClassKeyPath}\{subKey}", writable: true))
         {
             if (key == null)
                 throw new UnauthorizedAccessException(
-                    "Cannot open the adapter registry key for writing (Administrator rights are required).");
+                    "Impossible d'ouvrir la clé de registre de l'adaptateur en écriture (droits administrateur requis).");
             if (key.GetValueNames().Any(n => string.Equals(n, "NetworkAddress", StringComparison.OrdinalIgnoreCase)))
             {
                 key.DeleteValue("NetworkAddress", throwOnMissingValue: false);
@@ -232,20 +232,20 @@ public sealed class MacChangerService : IMacChanger
         }
 
         log?.Report(deleted
-            ? "Deleted NetworkAddress override - the adapter will use its hardware MAC again."
-            : "No NetworkAddress override present - nothing to restore.");
+            ? "Surcharge NetworkAddress supprimée - l'adaptateur réutilisera sa MAC matérielle."
+            : "Aucune surcharge NetworkAddress présente - rien à restaurer.");
 
         string connectionName = GetConnectionName(guid);
         if (!string.IsNullOrWhiteSpace(connectionName))
         {
-            log?.Report($"Restarting adapter '{connectionName}' via netsh...");
+            log?.Report($"Redémarrage de l'adaptateur '{connectionName}' via netsh...");
             RunNetsh($"interface set interface name=\"{connectionName}\" admin=disabled", log);
             await Task.Delay(1500, ct);
             RunNetsh($"interface set interface name=\"{connectionName}\" admin=enabled", log);
         }
         else
         {
-            log?.Report("No NetConnectionID found - disable/enable the adapter manually (or reboot) to apply.");
+            log?.Report("Aucun NetConnectionID trouvé - désactivez/activez l'adaptateur manuellement (ou redémarrez) pour appliquer.");
         }
     }
 

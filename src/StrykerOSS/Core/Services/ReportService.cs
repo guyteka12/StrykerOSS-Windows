@@ -31,7 +31,7 @@ public sealed class ReportService : IReportService
         string author, string? execSummary, string fmt, string outDir, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Report title is required.", nameof(title));
+            throw new ArgumentException("Le titre du rapport est requis.", nameof(title));
         ct.ThrowIfCancellationRequested();
 
         Directory.CreateDirectory(outDir);
@@ -69,11 +69,11 @@ public sealed class ReportService : IReportService
         }
 
         var authorFinal = string.IsNullOrWhiteSpace(author)
-            ? (string.IsNullOrWhiteSpace(_settings.Value.DefaultAuthor) ? "unknown" : _settings.Value.DefaultAuthor)
+            ? (string.IsNullOrWhiteSpace(_settings.Value.DefaultAuthor) ? "inconnu" : _settings.Value.DefaultAuthor)
             : author.Trim();
 
         await _db.AddReportAsync(new ReportRecord(0, project?.Id, title, normalized, path, DateTime.Now, authorFinal));
-        _log.Info("reports", $"generated {normalized} report '{title}' -> {path}");
+        _log.Info("reports", $"rapport {normalized} généré « {title} » -> {path}");
         return path;
     }
 
@@ -128,7 +128,7 @@ public sealed class ReportService : IReportService
                 page.Header().Column(col =>
                 {
                     col.Item().Text(title).FontSize(20).Bold();
-                    col.Item().Text($"Author: {author}  •  {DateTime.Now:d}  •  Project: {project?.Name ?? "—"}")
+                    col.Item().Text($"Auteur : {author}  •  {DateTime.Now:d}  •  Projet : {project?.Name ?? "—"}")
                         .FontSize(9).FontColor(Colors.Grey.Darken2);
                 });
 
@@ -136,11 +136,11 @@ public sealed class ReportService : IReportService
                 {
                     if (!string.IsNullOrWhiteSpace(execSummary))
                     {
-                        col.Item().Text("Executive summary").SemiBold().FontSize(13);
+                        col.Item().Text("Résumé exécutif").SemiBold().FontSize(13);
                         col.Item().Text(execSummary).FontSize(10);
                     }
 
-                    col.Item().PaddingTop(10).Text($"Findings ({findings.Count})").SemiBold().FontSize(13);
+                    col.Item().PaddingTop(10).Text($"Constats ({findings.Count})").SemiBold().FontSize(13);
 
                     foreach (var g in groups)
                     {
@@ -156,19 +156,19 @@ public sealed class ReportService : IReportService
                             if (!string.IsNullOrWhiteSpace(f.Impact))
                                 col.Item().Text(t =>
                                 {
-                                    t.Span("Impact: ").SemiBold().FontSize(9);
+                                    t.Span("Impact : ").SemiBold().FontSize(9);
                                     t.Span(f.Impact).FontSize(9);
                                 });
                             if (!string.IsNullOrWhiteSpace(f.Poc))
                                 col.Item().Text(t =>
                                 {
-                                    t.Span("POC: ").SemiBold().FontSize(9);
+                                    t.Span("Preuve de concept : ").SemiBold().FontSize(9);
                                     t.Span(f.Poc).FontFamily("Consolas").FontSize(9);
                                 });
                             if (!string.IsNullOrWhiteSpace(f.Remediation))
                                 col.Item().Text(t =>
                                 {
-                                    t.Span("Remediation: ").SemiBold().FontSize(9);
+                                    t.Span("Correctifs : ").SemiBold().FontSize(9);
                                     t.Span(f.Remediation).FontSize(9);
                                 });
                         }
@@ -214,15 +214,15 @@ p{line-height:1.5;font-size:13px;}
 """);
         sb.AppendLine("</head><body>");
         sb.AppendLine($"<h1>{Esc(title)}</h1>");
-        sb.AppendLine($"<div class=\"meta\">Author: {Esc(author)} &nbsp;•&nbsp; {DateTime.Now:yyyy-MM-dd HH:mm} &nbsp;•&nbsp; Project: {Esc(project?.Name ?? "—")}</div>");
+        sb.AppendLine($"<div class=\"meta\">Auteur : {Esc(author)} &nbsp;•&nbsp; {DateTime.Now:yyyy-MM-dd HH:mm} &nbsp;•&nbsp; Projet : {Esc(project?.Name ?? "—")}</div>");
         if (!string.IsNullOrWhiteSpace(execSummary))
-            sb.AppendLine($"<div class=\"card\"><div class=\"label\">EXECUTIVE SUMMARY</div><p>{Esc(execSummary).Replace("\n", "<br/>")}</p></div>");
-        sb.AppendLine($"<h2>Findings ({findings.Count})</h2>");
+            sb.AppendLine($"<div class=\"card\"><div class=\"label\">RÉSUMÉ EXÉCUTIF</div><p>{Esc(execSummary).Replace("\n", "<br/>")}</p></div>");
+        sb.AppendLine($"<h2>Constats ({findings.Count})</h2>");
         foreach (var g in findings
                      .GroupBy(f => (f.Severity ?? "info").ToLowerInvariant())
                      .OrderBy(g => SevRank(g.Key)))
         {
-            sb.AppendLine($"<h3><span class=\"badge sev-{Esc(g.Key)}\">{Esc(g.Key.ToUpperInvariant())}</span> &nbsp;{g.Count()} finding(s)</h3>");
+            sb.AppendLine($"<h3><span class=\"badge sev-{Esc(g.Key)}\">{Esc(g.Key.ToUpperInvariant())}</span> &nbsp;{g.Count()} constat(s)</h3>");
             foreach (var f in g)
             {
                 sb.AppendLine("<div class=\"card\">");
@@ -230,15 +230,15 @@ p{line-height:1.5;font-size:13px;}
                 if (!string.IsNullOrWhiteSpace(f.Description))
                     sb.AppendLine($"<p>{Esc(f.Description).Replace("\n", "<br/>")}</p>");
                 if (!string.IsNullOrWhiteSpace(f.Impact))
-                    sb.AppendLine($"<p><span class=\"label\">IMPACT:</span> {Esc(f.Impact)}</p>");
+                    sb.AppendLine($"<p><span class=\"label\">IMPACT :</span> {Esc(f.Impact)}</p>");
                 if (!string.IsNullOrWhiteSpace(f.Poc))
-                    sb.AppendLine($"<p><span class=\"label\">PROOF OF CONCEPT</span></p><pre>{Esc(f.Poc)}</pre>");
+                    sb.AppendLine($"<p><span class=\"label\">PREUVE DE CONCEPT</span></p><pre>{Esc(f.Poc)}</pre>");
                 if (!string.IsNullOrWhiteSpace(f.Remediation))
-                    sb.AppendLine($"<p><span class=\"label\">REMEDIATION:</span> {Esc(f.Remediation)}</p>");
+                    sb.AppendLine($"<p><span class=\"label\">CORRECTIFS :</span> {Esc(f.Remediation)}</p>");
                 sb.AppendLine("</div>");
             }
         }
-        sb.AppendLine("<div class=\"footer\">StrykerOSS — educational penetration testing report. Generated locally; no data leaves this machine.</div>");
+        sb.AppendLine("<div class=\"footer\">StrykerOSS — rapport de test d'intrusion à but éducatif. Généré localement ; aucune donnée ne quitte cette machine.</div>");
         sb.AppendLine("</body></html>");
         return sb.ToString();
     }
@@ -260,20 +260,20 @@ p{line-height:1.5;font-size:13px;}
         var sb = new StringBuilder();
         sb.AppendLine($"# {title}");
         sb.AppendLine();
-        sb.AppendLine($"- **Author:** {author}");
-        sb.AppendLine($"- **Date:** {DateTime.Now:yyyy-MM-dd HH:mm}");
-        sb.AppendLine($"- **Project:** {project?.Name ?? "—"}");
+        sb.AppendLine($"- **Auteur :** {author}");
+        sb.AppendLine($"- **Date :** {DateTime.Now:yyyy-MM-dd HH:mm}");
+        sb.AppendLine($"- **Projet :** {project?.Name ?? "—"}");
         if (project is { Client.Length: > 0 })
-            sb.AppendLine($"- **Client:** {project.Client}");
+            sb.AppendLine($"- **Client :** {project.Client}");
         sb.AppendLine();
         if (!string.IsNullOrWhiteSpace(execSummary))
         {
-            sb.AppendLine("## Executive summary");
+            sb.AppendLine("## Résumé exécutif");
             sb.AppendLine();
             sb.AppendLine(execSummary);
             sb.AppendLine();
         }
-        sb.AppendLine($"## Findings ({findings.Count})");
+        sb.AppendLine($"## Constats ({findings.Count})");
         sb.AppendLine();
         foreach (var g in findings
                      .GroupBy(f => (f.Severity ?? "info").ToLowerInvariant())
@@ -285,25 +285,25 @@ p{line-height:1.5;font-size:13px;}
             {
                 sb.AppendLine($"#### {f.Title}");
                 sb.AppendLine();
-                sb.AppendLine($"**Severity:** {f.Severity ?? "info"}");
+                sb.AppendLine($"**Sévérité :** {f.Severity ?? "info"}");
                 if (!string.IsNullOrWhiteSpace(f.Description)) { sb.AppendLine(); sb.AppendLine(f.Description); }
-                if (!string.IsNullOrWhiteSpace(f.Impact)) { sb.AppendLine(); sb.AppendLine($"**Impact:** {f.Impact}"); }
+                if (!string.IsNullOrWhiteSpace(f.Impact)) { sb.AppendLine(); sb.AppendLine($"**Impact :** {f.Impact}"); }
                 if (!string.IsNullOrWhiteSpace(f.Poc))
                 {
                     sb.AppendLine();
-                    sb.AppendLine("**Proof of concept:**");
+                    sb.AppendLine("**Preuve de concept :**");
                     sb.AppendLine();
                     sb.AppendLine("```");
                     sb.AppendLine(f.Poc);
                     sb.AppendLine("```");
                 }
-                if (!string.IsNullOrWhiteSpace(f.Remediation)) { sb.AppendLine(); sb.AppendLine($"**Remediation:** {f.Remediation}"); }
+                if (!string.IsNullOrWhiteSpace(f.Remediation)) { sb.AppendLine(); sb.AppendLine($"**Correctifs :** {f.Remediation}"); }
                 sb.AppendLine();
             }
         }
         sb.AppendLine("---");
         sb.AppendLine();
-        sb.AppendLine("*Generated by StrykerOSS — educational use only, on systems you are authorized to test.*");
+        sb.AppendLine("*Généré par StrykerOSS — usage éducatif uniquement, sur des systèmes que vous êtes autorisé à tester.*");
         return sb.ToString();
     }
 }

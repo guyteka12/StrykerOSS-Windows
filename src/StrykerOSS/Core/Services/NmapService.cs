@@ -14,11 +14,11 @@ public sealed class NmapService : INmapService
 {
     private static readonly List<NmapProfile> ProfileList = new()
     {
-        new("default",  "Default scan",  "-sV -T3",       "Service and version detection, normal timing - solid first look at a host."),
-        new("quick",    "Quick scan",    "-T4 -F",        "Fast scan of the 100 most common ports."),
-        new("full-tcp", "Full TCP scan", "-sT -p- -T4",   "All 65535 TCP ports - slow but complete."),
-        new("intense",  "Intense scan",  "-A -T4 -sV -O", "Aggressive: OS detection, versions, default scripts, traceroute."),
-        new("no-ping",  "No ping scan",  "-Pn -sV -T4",   "Skips host discovery - scans even when ICMP is blocked."),
+        new("default",  "Scan par défaut",  "-sV -T3",       "Détection des services et des versions, temporisation normale - premier aperçu solide d'un hôte."),
+        new("quick",    "Scan rapide",      "-T4 -F",        "Analyse rapide des 100 ports les plus courants."),
+        new("full-tcp", "Scan TCP complet", "-sT -p- -T4",   "Les 65535 ports TCP - lent mais complet."),
+        new("intense",  "Scan intense",     "-A -T4 -sV -O", "Agressif : détection d'OS, versions, scripts par défaut, traceroute."),
+        new("no-ping",  "Scan sans ping",   "-Pn -sV -T4",   "Ignore la découverte d'hôtes - scanne même si l'ICMP est bloqué."),
     };
 
     private readonly IToolLocator _tools;
@@ -38,10 +38,10 @@ public sealed class NmapService : INmapService
         CancellationToken ct = default, string? profileName = null)
     {
         var nmap = FindNmap()
-            ?? throw new InvalidOperationException("Nmap not found. Install from https://nmap.org or Tools Manager.");
+            ?? throw new InvalidOperationException("Nmap introuvable. Installez-le depuis https://nmap.org ou via le gestionnaire d'outils.");
 
         if (string.IsNullOrWhiteSpace(target))
-            throw new InvalidOperationException("Target is empty - enter an IP, range, CIDR or hostname.");
+            throw new InvalidOperationException("La cible est vide - saisissez une IP, une plage, un CIDR ou un nom d'hôte.");
         if (string.IsNullOrWhiteSpace(args))
             args = "-sV -T3";
 
@@ -70,7 +70,7 @@ public sealed class NmapService : INmapService
         process.ErrorDataReceived += (_, e) => { if (!string.IsNullOrWhiteSpace(e.Data)) log?.Report("[nmap-err] " + e.Data); };
 
         if (!process.Start())
-            throw new InvalidOperationException("Failed to start the nmap process.");
+            throw new InvalidOperationException("Impossible de démarrer le processus nmap.");
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
@@ -81,7 +81,7 @@ public sealed class NmapService : INmapService
         catch (OperationCanceledException)
         {
             try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch { }
-            log?.Report("nmap cancelled - process tree killed.");
+            log?.Report("nmap annulé - arborescence de processus interrompue.");
             throw;
         }
         sw.Stop();
@@ -89,11 +89,11 @@ public sealed class NmapService : INmapService
         if (!File.Exists(xmlPath))
         {
             var exit = process.HasExited ? process.ExitCode : -1;
-            throw new InvalidOperationException($"nmap exited with code {exit} without producing XML output. Is the target reachable and are the flags valid?");
+            throw new InvalidOperationException($"nmap s'est terminé avec le code {exit} sans produire de sortie XML. La cible est-elle joignable et les options sont-elles valides ?");
         }
 
         var hosts = ParseHosts(xmlPath);
-        log?.Report($"done: {hosts.Count} host(s) parsed, {hosts.Count(h => h.Up)} up, in {sw.Elapsed.TotalSeconds:0.0}s");
+        log?.Report($"terminé : {hosts.Count} hôte(s) analysé(s), {hosts.Count(h => h.Up)} actif(s), en {sw.Elapsed.TotalSeconds:0.0} s");
 
         return new NmapRun(target.Trim(), started, sw.Elapsed, hosts, xmlPath);
     }
@@ -105,7 +105,7 @@ public sealed class NmapService : INmapService
         var path = Path.Combine(outDir, $"nmap_report_{DateTime.Now:yyyyMMdd_HHmmss}.html");
 
         var sb = new StringBuilder();
-        sb.AppendLine("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>StrykerOSS - Nmap report</title>");
+        sb.AppendLine("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>StrykerOSS - Rapport Nmap</title>");
         sb.Append("<style>body{background:#0B0B12;color:#E8E8F2;font-family:'Segoe UI',Arial,sans-serif;margin:24px}");
         sb.Append("h1{color:#A78BFA}h2{color:#E8E8F2;border-bottom:1px solid #2A2A3C;padding-bottom:6px;font-size:17px}");
         sb.Append("table{border-collapse:collapse;width:100%;margin:8px 0 18px 0}th,td{border:1px solid #2A2A3C;padding:6px 10px;font-size:13px;text-align:left}");
@@ -113,26 +113,26 @@ public sealed class NmapService : INmapService
         sb.Append(".muted{color:#6E6E88;font-size:12px}.open{color:#22C55E;font-weight:bold}.filtered{color:#F59E0B;font-weight:bold}.closed{color:#6E6E88}");
         sb.Append(".card{background:#14141F;border:1px solid #2A2A3C;border-radius:10px;padding:14px;margin:0 0 16px 0}</style></head><body>");
         sb.AppendLine();
-        sb.AppendLine("<h1>StrykerOSS - Nmap report</h1>");
-        sb.AppendLine($"<div class=\"card\"><b>Target:</b> {Esc(run.Target)}<br/>" +
-                      $"<b>Started:</b> {run.Started:yyyy-MM-dd HH:mm:ss} UTC<br/>" +
-                      $"<b>Duration:</b> {run.Duration.TotalSeconds:0.0}s<br/>" +
-                      $"<b>Hosts:</b> {run.Hosts.Count} scanned, {run.Hosts.Count(h => h.Up)} up<br/>" +
-                      $"<span class=\"muted\">Raw XML: {Esc(run.RawXmlPath ?? "-")}</span></div>");
+        sb.AppendLine("<h1>StrykerOSS - Rapport Nmap</h1>");
+        sb.AppendLine($"<div class=\"card\"><b>Cible :</b> {Esc(run.Target)}<br/>" +
+                      $"<b>Démarré le :</b> {run.Started:yyyy-MM-dd HH:mm:ss} UTC<br/>" +
+                      $"<b>Durée :</b> {run.Duration.TotalSeconds:0.0} s<br/>" +
+                      $"<b>Hôtes :</b> {run.Hosts.Count} scanné(s), {run.Hosts.Count(h => h.Up)} actif(s)<br/>" +
+                      $"<span class=\"muted\">XML brut : {Esc(run.RawXmlPath ?? "-")}</span></div>");
 
         foreach (var h in run.Hosts)
         {
             var label = Esc(h.Ip) + (string.IsNullOrWhiteSpace(h.Hostname) ? "" : " - " + Esc(h.Hostname));
-            sb.AppendLine($"<h2>{label} <span class=\"muted\">[{(h.Up ? "up" : "down")}]</span></h2>");
+            sb.AppendLine($"<h2>{label} <span class=\"muted\">[{(h.Up ? "actif" : "hors ligne")}]</span></h2>");
 
             var meta = new List<string>();
             if (!string.IsNullOrWhiteSpace(h.Mac))
                 meta.Add("MAC " + Esc(h.Mac) + (string.IsNullOrWhiteSpace(h.MacVendor) ? "" : $" ({Esc(h.MacVendor)})"));
-            if (!string.IsNullOrWhiteSpace(h.OsGuess)) meta.Add("OS guess: " + Esc(h.OsGuess));
+            if (!string.IsNullOrWhiteSpace(h.OsGuess)) meta.Add("OS supposé : " + Esc(h.OsGuess));
             if (meta.Count > 0) sb.AppendLine("<div class=\"muted\">" + string.Join(" | ", meta) + "</div>");
 
             if (h.Ports.Count == 0) continue;
-            sb.AppendLine("<table><tr><th>Port</th><th>Proto</th><th>State</th><th>Service</th><th>Version</th><th>Script</th></tr>");
+            sb.AppendLine("<table><tr><th>Port</th><th>Proto</th><th>État</th><th>Service</th><th>Version</th><th>Script</th></tr>");
             foreach (var p in h.Ports)
             {
                 sb.AppendLine($"<tr><td>{p.Port}</td><td>{Esc(p.Proto)}</td><td class=\"{Esc(p.State)}\">{Esc(p.State)}</td>" +
@@ -141,7 +141,7 @@ public sealed class NmapService : INmapService
             sb.AppendLine("</table>");
         }
 
-        sb.AppendLine("<p class=\"muted\">Generated by StrykerOSS (GPL-3.0) - educational use only. Scan only systems you own or are authorized to test.</p>");
+        sb.AppendLine("<p class=\"muted\">Généré par StrykerOSS (GPL-3.0) - usage éducatif uniquement. Ne scannez que des systèmes que vous possédez ou êtes autorisé à tester.</p>");
         sb.AppendLine("</body></html>");
 
         await File.WriteAllTextAsync(path, sb.ToString()).ConfigureAwait(false);
