@@ -1,0 +1,136 @@
+<UserControl x:Class="StrykerOSS.Views.GeoMacView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource BgBrush}" TextElement.Foreground="{StaticResource TextBrush}" Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="GeoMac" Style="{StaticResource H1}"/>
+            <TextBlock Text="Real IP geolocation (ip-api.com), WiGLE CSV import and KML/CSV mapping exports."
+                       Style="{StaticResource Caption}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- main column -->
+            <StackPanel Grid.Column="0">
+
+                <!-- public ip lookup -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="PUBLIC IP GEOLOCATION" Style="{StaticResource Section}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="My IP" Style="{StaticResource BtnPrimary}" Command="{Binding MyIpCommand}"/>
+                            <TextBox Style="{StaticResource InputBox}" Width="200" Margin="12,0,0,0"
+                                     Text="{Binding LookupIp, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Content="Lookup" Style="{StaticResource BtnGhost}" Command="{Binding LookupCommand}" Margin="8,0,0,0"/>
+                            <TextBlock Text="{Binding MyIp, StringFormat='my ip: {0}'}" Style="{StaticResource Caption}"
+                                       Margin="12,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,10,0,0" Visibility="{Binding HasLookup, Converter={StaticResource B2V}}">
+                            <TextBlock Text="{Binding ResQuery, StringFormat='query: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResCountry, StringFormat='country: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResCity, StringFormat='city: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResIsp, StringFormat='isp: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResOrg, StringFormat='org: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResAs, StringFormat='as: {0}'}" Style="{StaticResource Caption}"/>
+                            <TextBlock Text="{Binding ResCoords, StringFormat='coords: {0}'}" Style="{StaticResource Caption}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- geo points -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="GEO POINTS" Style="{StaticResource Section}" Margin="0"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBlock Text="Points:" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding PointCount}" Style="{StaticResource Caption}" FontWeight="Bold"
+                                           Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Reload" Style="{StaticResource BtnGhost}" Command="{Binding ReloadCommand}"/>
+                            <Button Content="Import WiGLE CSV" Style="{StaticResource BtnPrimary}" Command="{Binding ImportWiGleCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Export KML" Style="{StaticResource BtnGhost}" Command="{Binding ExportKmlCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Export CSV" Style="{StaticResource BtnGhost}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
+                            <Button Content="Delete selected" Style="{StaticResource BtnDanger}" Command="{Binding DeletePointCommand}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding Points}" Height="300"
+                                 Margin="0,12,0,0" SelectedItem="{Binding SelectedPoint}"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto" VirtualizingPanel.ScrollUnit="Pixel">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource Card2Brush}" CornerRadius="10" Padding="12,8" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Label}" Style="{StaticResource Body}" FontWeight="Bold"/>
+                                                    <Border Style="{StaticResource BadgeInfo}" Margin="10,0,0,0">
+                                                        <TextBlock Text="{Binding Kind}" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="{Binding Bssid, StringFormat='bssid {0}'}" Style="{StaticResource Caption}"/>
+                                                    <TextBlock Text="{Binding Lat, StringFormat=' · lat {0}'}" Style="{StaticResource Caption}"/>
+                                                    <TextBlock Text="{Binding Lon, StringFormat=' · lon {0}'}" Style="{StaticResource Caption}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="Open map" Style="{StaticResource BtnGhost}"
+                                                    Command="{Binding DataContext.OpenMapCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <!-- side column -->
+            <StackPanel Grid.Column="1">
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="EDUCATIONAL" Style="{StaticResource Section}"/>
+                        <TextBlock Text="Map real IP addresses to physical locations and geo-tag captured access points. Imports standard WiGLE wardriving CSV exports; KML opens in Google Earth."
+                                   Style="{StaticResource Caption}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="HOW IT WORKS" Style="{StaticResource Section}"/>
+                        <TextBlock Text="· My IP / Lookup query ip-api.com (real HTTP)." Style="{StaticResource Caption}"/>
+                        <TextBlock Text="· WiGLE CSV rows are persisted locally via the project database." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                        <TextBlock Text="· KML/CSV exports cover every stored point with coordinates." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                        <TextBlock Text="· Open map pins the point on OpenStreetMap." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

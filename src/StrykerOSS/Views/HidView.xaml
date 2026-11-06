@@ -1,0 +1,114 @@
+<UserControl x:Class="StrykerOSS.Views.HidView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="{StaticResource BgBrush}" TextElement.Foreground="{StaticResource TextBrush}" Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- page header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="HID Attacks" Style="{StaticResource H1}"/>
+            <TextBlock Text="Real DuckyScript execution on this machine via Win32 SendInput."
+                       Style="{StaticResource Caption}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ============ left: warning + script + log ============ -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- educational warning card -->
+                <Border Grid.Row="0" Style="{StaticResource Card}">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Style="{StaticResource BadgeWarn}" Margin="0,0,12,0" VerticalAlignment="Top">
+                            <TextBlock Text="WARN" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                        </Border>
+                        <TextBlock Style="{StaticResource Body}" MaxWidth="660"
+                                   Text="HID executes keystrokes on THIS machine. Focus a safe target window (e.g. Notepad) before running. Educational."/>
+                    </StackPanel>
+                </Border>
+
+                <!-- script card -->
+                <Border Grid.Row="1" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="DUCKYSCRIPT" Style="{StaticResource Section}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Open .duck / .txt" Style="{StaticResource BtnPrimary}"
+                                    Command="{Binding OpenScriptCommand}"/>
+                            <Button Content="Create safe sample" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                                    Command="{Binding MakeSampleCommand}"/>
+                            <Button Content="RUN SCRIPT" Style="{StaticResource BtnDanger}" Margin="10,0,0,0"
+                                    Command="{Binding RunCommand}"/>
+                            <Button Content="STOP" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                                    Command="{Binding StopCommand}"/>
+                        </StackPanel>
+                        <CheckBox Content="I confirm the focused window is a safe target"
+                                  IsChecked="{Binding ConfirmExecute, Mode=TwoWay}" Margin="0,12,0,0"/>
+                        <TextBlock Text="{Binding ScriptPath}" FontFamily="Consolas" FontSize="12"
+                                   Foreground="{StaticResource DimBrush}" Margin="0,10,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding ScriptSummary}" Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- live log -->
+                <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,12,0,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="LIVE LOG" Style="{StaticResource Section}"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding LogLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="11"
+                                                   Foreground="{StaticResource DimBrush}" TextWrapping="Wrap"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+            </Grid>
+
+            <!-- ============ right: info ============ -->
+            <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="HOW IT WORKS" Style="{StaticResource Section}"/>
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,0,0,6"
+                                   Text="Each line is executed with real Win32 SendInput events - keys are pressed and released exactly like a USB Rubber Ducky would."/>
+                        <TextBlock Style="{StaticResource Caption}"
+                                   Text="STRING text is mapped through the ACTIVE Windows keyboard layout (VkKeyScanW), so non-US layouts like AZERTY type correctly."/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="SUPPORTED SYNTAX" Style="{StaticResource Section}"/>
+                        <TextBlock FontFamily="Consolas" FontSize="11" Foreground="{StaticResource DimBrush}"
+                                   Text="REM / REM BLOCK&#x0a;DELAY &lt;ms&gt;&#x0a;DEFAULTDELAY &lt;ms&gt;&#x0a;STRING &lt;text&gt;&#x0a;STRINGLN &lt;text&gt;&#x0a;REPEAT &lt;n&gt;&#x0a;GUI r / CTRL-ALT-DELETE&#x0a;ENTER TAB ESC SPACE F1-F12 ..."/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="EDUCATIONAL" Style="{StaticResource Section}"/>
+                        <TextBlock Style="{StaticResource Caption}"
+                                   Text="Run only against machines you own or are authorized to test. This module injects input locally - it does not target other devices."/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

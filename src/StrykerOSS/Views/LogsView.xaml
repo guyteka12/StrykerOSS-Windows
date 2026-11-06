@@ -1,0 +1,41 @@
+<UserControl x:Class="StrykerOSS.Views.LogsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="{StaticResource BgBrush}" TextElement.Foreground="{StaticResource TextBrush}" Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- page header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="Logs" Style="{StaticResource H1}"/>
+            <TextBlock Text="Live in-app log stream (real ILogger events). Full history is persisted to {DataDir}\logs.txt."
+                       Style="{StaticResource Caption}"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <DockPanel>
+                <!-- toolbar -->
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="LEVEL" Style="{StaticResource Section}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox Style="{StaticResource ComboDark}" Width="120" VerticalAlignment="Center"
+                              ItemsSource="{Binding Levels}" SelectedItem="{Binding SelectedLevel}"/>
+                    <Button Content="Export" Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                            Command="{Binding ExportCommand}"/>
+                    <Button Content="Clear view" Style="{StaticResource BtnGhost}" Margin="8,0,0,0"
+                            Command="{Binding ClearViewCommand}"/>
+                    <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="14,0,0,0"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- log lines -->
+                <ListBox Background="{StaticResource Card2Brush}" BorderThickness="0" Padding="8"
+                         ItemsSource="{Binding Lines}" FontFamily="Consolas" FontSize="12"
+                         Foreground="{StaticResource TextBrush}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         VirtualizingPanel.ScrollUnit="Pixel"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

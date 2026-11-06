@@ -1,0 +1,123 @@
+<UserControl x:Class="StrykerOSS.Views.UsbView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource BgBrush}" TextElement.Foreground="{StaticResource TextBrush}" Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- page header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="USB Arsenal" Style="{StaticResource H1}"/>
+            <TextBlock Text="Real USB PnP enumeration, ISO mounting (Mount-DiskImage) and removable-drive eject."
+                       Style="{StaticResource Caption}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- main column -->
+            <StackPanel Grid.Column="0">
+                <Border Style="{StaticResource Card}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="Refresh" Style="{StaticResource BtnGhost}" Command="{Binding RefreshCommand}"/>
+                            <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="12,0,0,0"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="430">
+                            <ItemsControl ItemsSource="{Binding Devices}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource Card2Brush}" CornerRadius="10"
+                                                Padding="12,8" Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Name}" Style="{StaticResource Body}"
+                                                                   FontWeight="SemiBold"/>
+                                                        <Border Margin="10,0,0,0">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border" BasedOn="{StaticResource BadgeInfo}">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsStorage}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <TextBlock Text="USB" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                        </Border>
+                                                        <Border Style="{StaticResource BadgeSuccess}" Margin="6,0,0,0"
+                                                                Visibility="{Binding IsStorage, Converter={StaticResource BoolToVis}}">
+                                                            <TextBlock Text="STORAGE" FontSize="10" FontWeight="Bold" Foreground="#0B0B12"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Manufacturer}" Style="{StaticResource Caption}"/>
+                                                    <TextBlock Text="{Binding PnpId}" FontSize="11"
+                                                               Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                                    <TextBlock Text="{Binding DetailText}" Style="{StaticResource Caption}"
+                                                               HorizontalAlignment="Right" Margin="0,0,0,6"/>
+                                                    <Button Content="Eject" Style="{StaticResource BtnDanger}"
+                                                            HorizontalAlignment="Right"
+                                                            Visibility="{Binding IsStorage, Converter={StaticResource BoolToVis}}"
+                                                            Command="{Binding DataContext.EjectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding PnpId}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="MOUNT ISO" Style="{StaticResource Section}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Style="{StaticResource InputBox}" Width="420"
+                                     Text="{Binding IsoPath, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Content="Browse..." Style="{StaticResource BtnGhost}" Margin="10,0,0,0"
+                                    Command="{Binding BrowseIsoCommand}"/>
+                            <Button Content="Mount" Style="{StaticResource BtnPrimary}" Margin="8,0,0,0"
+                                    Command="{Binding MountCommand}"/>
+                        </StackPanel>
+                        <TextBlock Text="Mounts a real disc image as a new drive letter via Mount-DiskImage -PassThru."
+                                   Style="{StaticResource Caption}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- side column -->
+            <Border Grid.Column="1" Style="{StaticResource Card}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="LOG" Style="{StaticResource Section}"/>
+                    <ListBox Background="{StaticResource Card2Brush}" BorderThickness="0" Padding="8"
+                             ItemsSource="{Binding Log}" FontFamily="Consolas" FontSize="11"
+                             Foreground="{StaticResource TextBrush}" Height="480"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             VirtualizingPanel.ScrollUnit="Pixel"/>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
